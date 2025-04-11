@@ -1,8 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
 
-// Type for the FeatureCard props
 interface FeatureCardProps {
   icon: string;
   title: string;
