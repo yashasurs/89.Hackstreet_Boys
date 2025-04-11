@@ -1,5 +1,7 @@
-import React from "react";
+'use client'
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Navbar from '@/components/Navbar';
 
 interface FeatureCardProps {
   icon: string;
@@ -67,30 +69,44 @@ function Step({ number, title, description }: StepProps) {
 }
 
 export default function HomePage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Check if token exists in localStorage
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsAuthenticated(true);
+    }
+    
+    // Add click event listener to close dropdown when clicking outside
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
+    setIsAuthenticated(false);
+    setIsDropdownOpen(false);
+  };
+  
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
   return (
     <div className="min-h-screen bg-[#36393f] text-white">
-      {/* Navigation */}
-      <nav className="bg-[#202225] sticky top-0 z-50 shadow-md">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center">
-            <span className="text-2xl font-bold text-[#8e6bff]">BrightMind</span>
-          </div>
-          <div className="hidden md:flex space-x-6">
-            <Link href="/features" className="text-[#dcddde] hover:text-white transition">Features</Link>
-            <Link href="/pricing" className="text-[#dcddde] hover:text-white transition">Pricing</Link>
-            <Link href="/about" className="text-[#dcddde] hover:text-white transition">About</Link>
-            <Link href="/contact" className="text-[#dcddde] hover:text-white transition">Contact</Link>
-          </div>
-          <div>
-            <Link href="/login">
-              <button className="px-4 py-2 bg-[#8e6bff] hover:bg-[#7b5cff] text-white font-medium rounded-md transition">
-                Sign In
-              </button>
-            </Link>
-          </div>
-        </div>
-      </nav>
-
+      <Navbar />
       {/* Hero Section */}
       <div className="relative bg-[#2f3136] overflow-hidden">
         <div className="absolute inset-0">
@@ -129,19 +145,19 @@ export default function HomePage() {
             <div className="w-24 h-1 bg-[#8e6bff] mx-auto"></div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <FeatureCard 
-              icon="🎧" 
-              title="Interactive Audio Learning" 
+            <FeatureCard
+              icon="🎧"
+              title="Interactive Audio Learning"
               description="Ask questions with your voice and listen to clear, child-friendly explanations tailored to your learning style."
             />
-            <FeatureCard 
-              icon="🧠" 
-              title="Adaptive Curriculum" 
+            <FeatureCard
+              icon="🧠"
+              title="Adaptive Curriculum"
               description="Our AI personalizes content to match your learning pace and style, ensuring better comprehension and retention."
             />
-            <FeatureCard 
-              icon="🌍" 
-              title="Multiple Languages" 
+            <FeatureCard
+              icon="🌍"
+              title="Multiple Languages"
               description="Learn in Hindi, English, Tamil, and more regional languages to make quality education accessible for everyone."
             />
           </div>
@@ -190,17 +206,17 @@ export default function HomePage() {
           </div>
           <div className="order-1 md:order-2">
             <div className="space-y-8">
-              <Step 
+              <Step
                 number={1}
                 title="Choose a Subject"
                 description="Select from Math, Science, History and more to begin your personalized learning journey."
               />
-              <Step 
+              <Step
                 number={2}
                 title="Learn at Your Pace"
                 description="Read or listen to simple explanations that break down complex concepts into easy-to-understand steps."
               />
-              <Step 
+              <Step
                 number={3}
                 title="Test Your Knowledge"
                 description="Take engaging quizzes to reinforce what you've learned and earn badges for your achievements."
@@ -218,18 +234,18 @@ export default function HomePage() {
             <div className="w-24 h-1 bg-[#8e6bff] mx-auto"></div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <TestimonialCard 
-              text="BrightMind helped me understand difficult math concepts through simple examples. Now I enjoy solving problems instead of being afraid of them!" 
+            <TestimonialCard
+              text="BrightMind helped me understand difficult math concepts through simple examples. Now I enjoy solving problems instead of being afraid of them!"
               author="Priya S."
               role="Class 8 Student, Bangalore"
             />
-            <TestimonialCard 
-              text="I love that I can learn in Hindi. The voice feature is very helpful when I'm not sure how to read something. It feels like having a teacher at home." 
+            <TestimonialCard
+              text="I love that I can learn in Hindi. The voice feature is very helpful when I'm not sure how to read something. It feels like having a teacher at home."
               author="Rahul M."
               role="Class 6 Student, Jaipur"
             />
-            <TestimonialCard 
-              text="The quizzes are fun and challenging. I can see how much I'm improving every week! My parents are amazed at how much I've learned." 
+            <TestimonialCard
+              text="The quizzes are fun and challenging. I can see how much I'm improving every week! My parents are amazed at how much I've learned."
               author="Anjali K."
               role="Class 7 Student, Chennai"
             />

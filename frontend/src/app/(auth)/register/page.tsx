@@ -26,12 +26,37 @@ export default function RegisterPage() {
     setIsLoading(true);
     setError("");
     
-    // Simulate API call
-    setTimeout(() => {
-      // For demo purposes only
+    try {
+      const response = await fetch('http://localhost:8000/api/signup/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+          first_name: firstName,
+          last_name: lastName
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || Object.values(data).flat().join(', '));
+      }
+      
+      // Store token in localStorage or a state management solution
+      localStorage.setItem('token', data.token);
+      
+      // Redirect to dashboard
+      router.push("/login");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Registration failed');
+    } finally {
       setIsLoading(false);
-      router.push("/dashboard");
-    }, 1500);
+    }
   };
   
   return (
@@ -39,23 +64,42 @@ export default function RegisterPage() {
       {/* Top Navigation */}
       <nav className="bg-[#202225] shadow-md">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center">
-            <Link href="/" className="flex items-center">
-              <span className="text-2xl font-bold text-[#8e6bff]">BrightMind</span>
-            </Link>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Link href="/" className="flex items-center">
+                <span className="text-2xl font-bold text-[#8e6bff]">BrightMind</span>
+              </Link>
+              
+            </div>
+            
+            {/* Auth Buttons */}
+            <div className="flex items-center space-x-4">
+              <Link 
+                href="/login" 
+                className="px-4 py-2 text-[#dcddde] hover:text-white transition-colors"
+              >
+                Log In
+              </Link>
+              <Link 
+                href="/register" 
+                className="px-4 py-2 bg-[#8e6bff] hover:bg-[#7b5cff] text-white font-medium rounded-md transition-all shadow-lg hover:shadow-[0_0_15px_rgba(142,107,255,0.5)]"
+              >
+                Sign Up
+              </Link>
+            </div>
           </div>
         </div>
       </nav>
       
       {/* Register Container */}
-      <div className="flex-grow flex items-center justify-center p-4 py-12">
-        <div className="bg-[#2f3136] rounded-lg shadow-xl w-full max-w-2xl p-8 border border-[#202225]">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+      <div className="flex-grow flex items-center justify-center p-6 py-16">
+        <div className="bg-[#2f3136] rounded-lg shadow-xl w-full max-w-4xl p-10 border border-[#202225]">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-12">
             {/* Left side with form */}
-            <div className="md:col-span-3">
-              <div className="mb-8">
-                <h1 className="text-2xl font-bold text-white mb-2">Create an Account</h1>
-                <p className="text-[#b9bbbe]">Join our community and start learning!</p>
+            <div className="md:col-span-3 space-y-2">
+              <div className="mb-10">
+                <h1 className="text-3xl font-bold text-white mb-3">Create an Account</h1>
+                <p className="text-[#b9bbbe] text-lg">Join our community and start learning!</p>
               </div>
               
               {error && (
@@ -65,7 +109,7 @@ export default function RegisterPage() {
               )}
               
               <form onSubmit={handleSubmit}>
-                <div className="mb-6">
+                <div className="mb-8">
                   <label htmlFor="firstName" className="block text-[#dcddde] text-sm font-medium mb-2">
                     First Name
                   </label>
@@ -79,7 +123,7 @@ export default function RegisterPage() {
                   />
                 </div>
                 
-                <div className="mb-6">
+                <div className="mb-8">
                   <label htmlFor="lastName" className="block text-[#dcddde] text-sm font-medium mb-2">
                     Last Name
                   </label>
@@ -93,7 +137,7 @@ export default function RegisterPage() {
                   />
                 </div>
     
-                <div className="mb-6">
+                <div className="mb-8">
                   <label htmlFor="username" className="block text-[#dcddde] text-sm font-medium mb-2">
                     Username
                   </label>
@@ -107,7 +151,7 @@ export default function RegisterPage() {
                   />
                 </div>
                 
-                <div className="mb-6">
+                <div className="mb-8">
                   <label htmlFor="email" className="block text-[#dcddde] text-sm font-medium mb-2">
                     Email
                   </label>
@@ -121,7 +165,7 @@ export default function RegisterPage() {
                   />
                 </div>
                 
-                <div className="mb-6">
+                <div className="mb-8">
                   <label htmlFor="password" className="block text-[#dcddde] text-sm font-medium mb-2">
                     Password
                   </label>
@@ -168,10 +212,10 @@ export default function RegisterPage() {
             </div>
             
             {/* Right side with illustration/info */}
-            <div className="hidden md:flex md:col-span-2 bg-[#202225] rounded-lg p-6 flex-col items-center justify-center">
-              <div className="text-6xl mb-4">🚀</div>
-              <h3 className="text-xl font-bold text-white mb-2">Start Your Journey</h3>
-              <p className="text-center text-[#b9bbbe] text-sm">
+            <div className="hidden md:flex md:col-span-2 bg-[#202225] rounded-lg p-8 flex-col items-center justify-center">
+              <div className="text-7xl mb-6">🚀</div>
+              <h3 className="text-2xl font-bold text-white mb-3">Start Your Journey</h3>
+              <p className="text-center text-[#b9bbbe] text-base">
                 Create an account to unlock personalized learning paths, track progress, and connect with other students.
               </p>
             </div>
