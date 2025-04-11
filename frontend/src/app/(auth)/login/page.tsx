@@ -44,6 +44,16 @@ export default function LoginPage() {
         throw new Error(data.error || data.detail || 'Login failed');
       }
       
+      console.log("Login response:", data); // Debug the response structure
+      
+      // Check for token in various possible formats
+      const accessToken = data.access || data.token || data.accessToken || data.access_token;
+      
+      if (!accessToken) {
+        console.error("Server response:", data);
+        throw new Error('Server did not return a valid access token');
+      }
+      
       // Save user data and use context login
       const userData = { 
         username: username,
@@ -52,7 +62,7 @@ export default function LoginPage() {
       };
       
       // Use the auth context to login
-      login(data.access, data.refresh || null, userData);
+      login(accessToken, data.refresh || data.refreshToken || data.refresh_token || null, userData);
       
       // Save remember me preference if needed
       if (rememberMe) {
@@ -62,6 +72,7 @@ export default function LoginPage() {
       // Redirect to dashboard
       router.push("/");
     } catch (err) {
+      console.error('Login error:', err);
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
       setIsLoading(false);
