@@ -1,0 +1,58 @@
+<!-- templates/json_lesson_template.html -->
+<html>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <h1>{{ topic }}</h1>
+
+        <p><strong>Difficulty Level:</strong> {{ difficulty_level }}</p>
+
+        <h2>Summary</h2>
+        <p>{{ summary }}</p>
+
+        <h2>Lesson Sections</h2>
+        {% for section in sections %}
+            <h3>{{ section.title }}</h3>
+            <p>{{ section.content }}</p>
+            <ul>
+                {% for point in section.key_points %}
+                    <li>{{ point }}</li>
+                {% endfor %}
+            </ul>
+        {% endfor %}
+
+        <h2>References</h2>
+        <ul>
+            {% for ref in references %}
+                <li>{{ ref }}</li>
+            {% endfor %}
+        </ul>
+
+        <hr style="margin: 30px 0;" />
+
+        <h2>Generated Questions</h2>
+        <ol>
+            {% for question in questions %}
+                <p><strong>{{ forloop.counter }}. {{ question.question }}</strong></p>
+                <ul>
+                    <li>a. A) {{ question.option_a }}</li>
+                    <li>b. B) {{ question.option_b }}</li>
+                    <li>c. C) {{ question.option_c }}</li>
+                    <li>d. D) {{ question.option_d }}</li>
+                </ul>
+                <p><strong>Answer:</strong>
+                    {% if question.answer_option == 'a' %}
+                        {{ question.option_a }}
+                    {% elif question.answer_option == 'b' %}
+                        {{ question.option_b }}
+                    {% elif question.answer_option == 'c' %}
+                        {{ question.option_c }}
+                    {% elif question.answer_option == 'd' %}
+                        {{ question.option_d }}
+                    {% else %}
+                        Unknown
+                    {% endif %}
+                </p>
+            {% endfor %}
+        </ol>
+    </body>
+</html>
+

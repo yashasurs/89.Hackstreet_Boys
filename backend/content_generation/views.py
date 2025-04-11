@@ -7,6 +7,7 @@ from .content_generation import generate_content_for_topic
 from .question_generation import QuestionGeneratorAgent
 from .models import GeneratedContent
 from .serializers import GeneratedContentSerializer
+from .utils import generate_lesson_pdf_from_topic
 import json
 import logging
 
@@ -183,3 +184,67 @@ def user_contents(request):
             {"error": f"Failed to retrieve content: {str(e)}"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def generate_and_download_pdf(request):
+    try:
+        # Try to safely get the request data
+        try:
+            data = request.data
+            # Log the request data type for debugging
+            logger.info(f"Request data type: {type(data)}")
+        except Exception as data_error:
+            logger.warning(f"Error parsing request data: {str(data_error)}")
+            # If we can't parse the data, use an empty dict
+            data = {}
+        
+        # Directly extract fields from the root of the JSON with default values
+        topic = data.get("topic", "Untitled Lesson") if isinstance(data, dict) else "Untitled Lesson"
+        summary = data.get("summary", "No summary provided.") if isinstance(data, dict) else "No summary provided."
+        
+        # Handle sections with careful validation
+        if isinstance(data, dict) and isinstance(data.get("sections"), list):
+            sections = data.get("sections")
+        else:
+            sections = [{"title": "Empty Section", "content": "No content available.", "key_points": ["No key points available."]}]
+            
+        # Handle references with careful validation
+        if isinstance(data, dict) and isinstance(data.get("references"), list):
+            references = data.get("references")
+        else:
+            references = ["No references provided."]
+            
+        difficulty_level = data.get("difficulty_level", "intermediate") if isinstance(data, dict) else "intermediate"
+        
+        # Handle questions with careful validation
+        if isinstance(data, dict) and isinstance(data.get("questions"), list):
+            questions = data.get("questions")
+        else:
+            questions = []
+
+        # Log what we extracted
+        logger.info(f"Extracted fields - topic: {topic}, summary: {summary[:50]}..., " +
+                   f"sections count: {len(sections)}, references count: {len(references)}, " +
+                   f"difficulty_level: {difficulty_level}, questions count: {len(questions)}")
+
+        # Build content_json for the PDF function
+        content_json = {
+            "summary": summary,
+            "sections": sections,
+            "references": references,
+            "difficulty_level": difficulty_level
+        }
+
+        # Transform question data if needed to match expected format
+        if questions:
+            for q in questions:
+                if isinstance(q, dict) and 'answer_option' in q and 'answer' not in q:
+                    q['answer'] = q['answer_option'].lower()
+
+        return generate_lesson_pdf_from_topic(topic, content_json, questions)
+
+    except Exception as e:
+        logger.exception(f"PDF generation error: {str(e)}")
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
