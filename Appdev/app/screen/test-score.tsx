@@ -20,17 +20,28 @@ const TestScore = () => {
 
   // Ensure parameters are strings
   const parsedScore = Array.isArray(score) ? score[0] : score;
-  const parsedSelectedAnswers = JSON.parse(Array.isArray(selectedAnswers) ? selectedAnswers[0] : selectedAnswers || "{}");
-  const parsedQuestions: Question[] = JSON.parse(Array.isArray(questions) ? questions[0] : questions || "[]");
+  const parsedSelectedAnswers = (() => {
+    try {
+      return JSON.parse(Array.isArray(selectedAnswers) ? selectedAnswers[0] : selectedAnswers || "{}");
+    } catch {
+      return {}; // Default to an empty object if parsing fails
+    }
+  })();
+
+  const parsedQuestions: Question[] = (() => {
+    try {
+      return JSON.parse(Array.isArray(questions) ? questions[0] : questions || "[]");
+    } catch {
+      return []; // Default to an empty array if parsing fails
+    }
+  })();
 
   // Find wrong answers
   const wrongAnswers = parsedQuestions.filter((q, index) => {
-    const selectedAnswer = parsedSelectedAnswers[index]?.trim().toLowerCase(); // Normalize selected answer
-    const correctAnswer = q.answer.trim().toLowerCase(); // Normalize correct answer
-
-    console.log("Question:", q.question);
-    console.log("Correct Answer:", correctAnswer);
-    console.log("Selected Answer:", selectedAnswer);
+    const selectedAnswer = parsedSelectedAnswers[index]
+      ? parsedSelectedAnswers[index].trim().toLowerCase()
+      : null; // Default to null if undefined
+    const correctAnswer = q.answer ? q.answer.trim().toLowerCase() : null; // Default to null if undefined
 
     return selectedAnswer !== correctAnswer; // Compare normalized answers
   });

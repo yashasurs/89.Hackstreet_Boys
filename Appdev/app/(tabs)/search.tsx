@@ -9,11 +9,12 @@ import {
   TouchableOpacity,
   StyleSheet,
   FlatList,
-  Linking, // Add this import
+  Linking,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { images } from "@/constants/images";
 import SearchBar from "@/app/components/SearchBar";
+import { useAuth } from "../contexts/AuthContext"; // Import useAuth for authentication
 
 interface Section {
   title: string;
@@ -40,6 +41,7 @@ const SearchContentScreen = () => {
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState<Content | null>(null);
   const [videos, setVideos] = useState<Video[]>([]);
+  const { token } = useAuth(); // Get the token from AuthContext
   const router = useRouter();
 
   const handleSearch = async () => {
@@ -55,6 +57,7 @@ const SearchContentScreen = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Token ${token}`, // Add the token to the Authorization header
         },
         body: JSON.stringify({ topic: searchQuery }),
       });
@@ -66,6 +69,7 @@ const SearchContentScreen = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Token ${token}`, // Add the token to the Authorization header
         },
         body: JSON.stringify({ topic: searchQuery }),
       });

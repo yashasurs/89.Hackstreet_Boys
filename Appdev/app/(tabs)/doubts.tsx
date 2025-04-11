@@ -4,7 +4,7 @@ import { View, Text, StyleSheet } from 'react-native';
 const SavedScreen = () => {
     return (
         <View style={styles.container}>
-            <Text style={styles.text}>Saved Screen</Text>
+            <Text style={styles.text}>Doubts</Text>
         </View>
     );
 };

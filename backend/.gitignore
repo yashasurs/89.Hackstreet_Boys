@@ -1,5 +1,7 @@
 venv
 .env
+backend
+.gitignore
 
 __pycache__
 
