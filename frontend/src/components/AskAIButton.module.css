@@ -1,0 +1,339 @@
+.button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: rgba(74, 144, 226, 0.9);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  padding: 14px 30px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  z-index: 999;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.button:hover {
+  background-color: rgb(74, 144, 226);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
+.buttonIcon {
+  display: flex;
+  align-items: center;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(3px);
+  z-index: 1000;
+  display: flex;
+  justify-content: flex-end;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.panel {
+  width: 400px;
+  height: 100%;
+  background-color: rgba(40, 42, 48, 0.95);
+  backdrop-filter: blur(10px);
+  box-shadow: -5px 0 25px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@keyframes slideIn {
+  from { transform: translateX(400px); }
+  to { transform: translateX(0); }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(30, 32, 36, 0.8);
+}
+
+.header h3 {
+  margin: 0;
+  color: #f5f5f7;
+  font-weight: 500;
+  font-size: 18px;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #f5f5f7;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.closeButton:hover {
+  opacity: 1;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.content {
+  padding: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.conversationContainer {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.emptyConversation {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.userMessage, .aiMessage {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  animation: messageAppear 0.3s ease-out;
+}
+
+@keyframes messageAppear {
+  from { 
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.userAvatar, .aiAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.userAvatar {
+  background-color: rgba(74, 144, 226, 0.8);
+  color: white;
+}
+
+.aiAvatar {
+  background-color: rgba(132, 76, 196, 0.8);
+  color: white;
+}
+
+.userMessageContent, .aiMessageContent {
+  background-color: rgba(255, 255, 255, 0.08);
+  padding: 12px 16px;
+  border-radius: 12px;
+  max-width: 85%;
+}
+
+.userMessageContent {
+  background-color: rgba(74, 144, 226, 0.2);
+  border-bottom-right-radius: 4px;
+  align-self: flex-end;
+  border: 1px solid rgba(74, 144, 226, 0.3);
+}
+
+.aiMessageContent {
+  background-color: rgba(132, 76, 196, 0.1);
+  border-bottom-left-radius: 4px;
+  align-self: flex-start;
+  border: 1px solid rgba(132, 76, 196, 0.2);
+}
+
+.aiMessageContent p, .userMessageContent p {
+  margin: 0;
+  color: #f5f5f7;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.aiWelcome {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.inputContainer {
+  display: flex;
+  gap: 8px;
+  padding: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(30, 32, 36, 0.5);
+}
+
+.textarea {
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #f5f5f7;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 18px;
+  padding: 12px 16px;
+  font-size: 14px;
+  resize: none;
+  max-height: 120px;
+  min-height: 48px;
+  transition: border-color 0.2s;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: rgba(74, 144, 226, 0.6);
+  box-shadow: 0 0 0 1px rgba(74, 144, 226, 0.2);
+}
+
+.textarea::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.submitButton {
+  background-color: rgba(74, 144, 226, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.submitButton:hover {
+  background-color: rgb(74, 144, 226);
+  transform: scale(1.05);
+}
+
+.submitButton:disabled {
+  background-color: rgba(204, 204, 204, 0.3);
+  cursor: not-allowed;
+  transform: scale(1);
+}
+
+.loading {
+  color: rgba(255, 255, 255, 0.8);
+  font-style: italic;
+  display: flex;
+  align-items: center;
+}
+
+.loadingDots::after {
+  content: "...";
+  animation: loadingDots 1.5s infinite;
+}
+
+@keyframes loadingDots {
+  0%, 20% { content: "."; }
+  40% { content: ".."; }
+  60%, 100% { content: "..."; }
+}
+
+.error {
+  color: #ff9a9a;
+  border-left: 3px solid #ff6b6b;
+  padding-left: 10px;
+  margin: 0;
+}
+
+.unauthorizedMessage {
+  text-align: center;
+  padding: 30px 20px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  margin: 20px;
+}
+
+.unauthorizedMessage p {
+  margin: 0;
+  color: #f5f5f7;
+  font-size: 16px;
+}
+
+.loginButton {
+  background-color: rgba(74, 144, 226, 0.9);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.loginButton:hover {
+  background-color: rgb(74, 144, 226);
+  transform: translateY(-2px);
+}
+
+.contentReference {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 16px 16px 0;
+  border-left: 3px solid rgba(74, 144, 226, 0.6);
+}
+
+.contentReferenceLabel {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.infoIcon {
+  color: rgba(74, 144, 226, 0.9);
+}
