@@ -7,11 +7,20 @@ import Navbar from '../../components/Navbar'; // Import the Navbar component
 import QuizButton from '../../components/QuizButton';
 import AskAIButton from '../../components/AskAIButton';
 import RecommendedVideos from '../../components/RecommendedVideo';
+import PDFGenerator from '../../components/PDFGenerator';
 
 interface Content {
   topic: string;
   summary: string;
   sections: Section[];
+}
+
+interface Content {
+  topic: string;
+  summary: string;
+  sections: Section[];
+  references?: string[]; // Add this property
+  difficulty_level?: string; // Add this property
 }
 
 interface Section {
@@ -640,6 +649,21 @@ const ContentGenerationPage = () => {
                     </div>
                   )}
                 </div>
+              )}
+
+              {content && (
+                <div className="mt-8">
+                <h2 className="text-2xl font-bold">Generated Content: </h2>
+                
+                <PDFGenerator
+                  topic={content.topic}
+                  summary={content.summary}
+                  sections={content.sections}
+                  references={content.references || []}
+                  difficulty_level={content.difficulty_level || 'beginner'}
+                  questions={quizQuestions || []}
+                />
+              </div>
               )}
             </div>
           </div>
