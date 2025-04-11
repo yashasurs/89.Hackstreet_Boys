@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Navbar from '../../components/Navbar'; // Import the Navbar component
 import QuizButton from '../../components/QuizButton';
 import AskAIButton from '../../components/AskAIButton';
+import RecommendedVideos from '../../components/RecommendedVideo';
 
 interface Content {
   topic: string;
@@ -326,8 +327,14 @@ const ContentGenerationPage = () => {
                 )}
               </div>
 
+              {/* Place RecommendedVideos BEFORE the content */}
               {content && (
-                <div className="bg-[#2f3136] rounded-xl shadow-lg border border-[#202225] overflow-hidden">
+                <RecommendedVideos topic={content.topic} />
+              )}
+
+              {/* Then display the content */}
+              {content && (
+                <div className="bg-[#2f3136] rounded-xl shadow-lg border border-[#202225] overflow-hidden mb-6">
                   {/* Content Header */}
                   <div className="bg-[#202225] p-6">
                     <h2 className="text-2xl font-bold text-[#8e6bff] mb-3">{content.topic}</h2>
@@ -368,6 +375,7 @@ const ContentGenerationPage = () => {
                 </div>
               )}
 
+              {/* Quiz section remains after the content */}
               {content && (
                 <div className="mt-6 bg-[#2f3136] rounded-xl shadow-lg border border-[#202225] overflow-hidden">
                   <div className="p-6 border-b border-[#40444b] flex items-center justify-between">
