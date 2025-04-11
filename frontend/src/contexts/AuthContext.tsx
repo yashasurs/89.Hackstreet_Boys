@@ -17,6 +17,7 @@ type AuthContextType = {
   token: string | null;
   login: (token: string, refreshToken: string | null, userData: User) => void;
   logout: () => void;
+  getToken: () => Promise<string | null>; // Added getToken method
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,6 +27,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Improved getToken method
+  const getToken = async (): Promise<string | null> => {
+    try {
+      const storedToken = localStorage.getItem('token');
+      if (!storedToken) {
+        console.warn('No token found in localStorage');
+        return null;
+      }
+      return storedToken;
+    } catch (error) {
+      console.error('Error retrieving token:', error);
+      return null;
+    }
+  };
 
   useEffect(() => {
     // Load user data from localStorage on mount
@@ -42,6 +58,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = (newToken: string, refreshToken: string | null, userData: User) => {
+    // Validate token before storing
+    if (!newToken) {
+      console.error('Login failed: Token is undefined or empty');
+      return;
+    }
+    
     localStorage.setItem('token', newToken);
     if (refreshToken) {
       localStorage.setItem('refreshToken', refreshToken);
@@ -71,7 +93,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated,
         token,
         login,
-        logout
+        logout,
+        getToken // Added to the context value
       }}
     >
       {!isLoading && children}
