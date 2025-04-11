@@ -33,7 +33,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'content_generation',
     'videos',
-    'quizzes',
+    'chatbot',
     'user_profiles',
 ]
 
@@ -56,6 +56,18 @@ CORS_ALLOW_ALL_ORIGINS = True  # For development only, don't use in production
 #     "http://localhost:3000",
 #     "http://127.0.0.1:3000",
 # ]
+
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
 
 ROOT_URLCONF = 'core.urls'
 
