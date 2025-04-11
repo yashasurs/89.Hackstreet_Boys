@@ -3,20 +3,22 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   
   const router = useRouter();
+  const { login } = useAuth();
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password) {
+    if (!username || !password) {
       setError("Please fill in all fields");
       return;
     }
@@ -24,12 +26,46 @@ export default function LoginPage() {
     setIsLoading(true);
     setError("");
     
-    // Simulate API call
-    setTimeout(() => {
-      // For demo purposes only
+    try {
+      const response = await fetch('http://localhost:8000/api/login/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username,
+          password
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || data.detail || 'Login failed');
+      }
+      
+      // Save user data and use context login
+      const userData = { 
+        username: username,
+        // Include any other user data from response if available
+        ...(data.user || {})
+      };
+      
+      // Use the auth context to login
+      login(data.access, data.refresh || null, userData);
+      
+      // Save remember me preference if needed
+      if (rememberMe) {
+        localStorage.setItem('rememberUser', 'true');
+      }
+      
+      // Redirect to dashboard
+      router.push("/");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed');
+    } finally {
       setIsLoading(false);
-      router.push("/dashboard");
-    }, 1500);
+    }
   };
   
   return (
@@ -46,14 +82,14 @@ export default function LoginPage() {
       </nav>
       
       {/* Login Container */}
-      <div className="flex-grow flex items-center justify-center p-4 py-12">
-        <div className="bg-[#2f3136] rounded-lg shadow-xl w-full max-w-2xl p-8 border border-[#202225]">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+      <div className="flex-grow flex items-center justify-center p-6 py-16">
+        <div className="bg-[#2f3136] rounded-lg shadow-xl w-full max-w-4xl p-10 border border-[#202225]">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-12">
             {/* Left side with form */}
-            <div className="md:col-span-3">
-              <div className="mb-8">
-                <h1 className="text-2xl font-bold text-white mb-2">Welcome Back</h1>
-                <p className="text-[#b9bbbe]">We're so excited to see you again!</p>
+            <div className="md:col-span-3 space-y-2">
+              <div className="mb-10">
+                <h1 className="text-3xl font-bold text-white mb-3">Welcome Back</h1>
+                <p className="text-[#b9bbbe] text-lg">We're so excited to see you again!</p>
               </div>
               
               {error && (
@@ -63,24 +99,24 @@ export default function LoginPage() {
               )}
               
               <form onSubmit={handleSubmit}>
-                <div className="mb-6">
-                  <label htmlFor="email" className="block text-[#dcddde] text-sm font-medium mb-2">
-                    EMAIL
+                <div className="mb-8">
+                  <label htmlFor="username" className="block text-[#dcddde] text-sm font-medium mb-2">
+                    Username
                   </label>
                   <input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    id="username"
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     className="w-full px-4 py-2 rounded-md bg-[#202225] border border-[#40444b] text-white focus:outline-none focus:ring-2 focus:ring-[#8e6bff] focus:border-transparent transition-all"
-                    placeholder="Enter your email"
+                    placeholder="Enter your username"
                   />
                 </div>
                 
-                <div className="mb-6">
+                <div className="mb-2">
                   <div className="flex justify-between items-center mb-2">
                     <label htmlFor="password" className="text-[#dcddde] text-sm font-medium">
-                      PASSWORD
+                      Password
                     </label>
                     <Link href="/forgot-password" className="text-xs text-[#8e6bff] hover:underline">
                       Forgot your password?
@@ -147,10 +183,10 @@ export default function LoginPage() {
             </div>
             
             {/* Right side with illustration/info */}
-            <div className="hidden md:flex md:col-span-2 bg-[#202225] rounded-lg p-6 flex-col items-center justify-center">
-              <div className="text-6xl mb-4">✨</div>
-              <h3 className="text-xl font-bold text-white mb-2">Enhanced Learning</h3>
-              <p className="text-center text-[#b9bbbe] text-sm">
+            <div className="hidden md:flex md:col-span-2 bg-[#202225] rounded-lg p-8 flex-col items-center justify-center">
+              <div className="text-7xl mb-6">✨</div>
+              <h3 className="text-2xl font-bold text-white mb-3">Enhanced Learning</h3>
+              <p className="text-center text-[#b9bbbe] text-base">
                 Log in to access your personalized learning journey and track your progress.
               </p>
             </div>
