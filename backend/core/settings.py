@@ -33,7 +33,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'content_generation',
     'videos',
-    'quizzes',
+    'chatbot',
     'user_profiles',
 ]
 

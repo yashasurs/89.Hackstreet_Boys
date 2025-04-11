@@ -6,4 +6,5 @@ urlpatterns = [
     path('api/', include('content_generation.urls')),
     path('api/', include('videos.urls')),
     path('api/', include('user_profiles.urls')),
+    path('api/', include('chatbot.urls')),
 ]
