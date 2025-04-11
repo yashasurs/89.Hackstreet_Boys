@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import Link from 'next/link';
 import Navbar from '../../components/Navbar'; // Import the Navbar component
 import QuizButton from '../../components/QuizButton';
+import AskAIButton from '../../components/AskAIButton';
 
 interface Content {
   topic: string;
@@ -192,6 +193,12 @@ const ContentGenerationPage = () => {
       [questionIndex]: selectedOption.toUpperCase()
     }));
   };
+
+  // Get the current content to pass to the AskAIButton
+  const currentContentText = content ? 
+    `Topic: ${content.topic}\n\nSummary: ${content.summary}\n\n${content.sections.map(section => 
+      `${section.title}:\n${section.content}\nKey Points:\n${section.key_points.join('\n')}`
+    ).join('\n\n')}` : '';
 
   return (
     <div className="min-h-screen bg-[#36393f] text-white flex flex-col">
@@ -630,6 +637,7 @@ const ContentGenerationPage = () => {
           </div>
         </div>
       </div>
+      <AskAIButton currentContent={currentContentText} />
     </div>
   );
 };
