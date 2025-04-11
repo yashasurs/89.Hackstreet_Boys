@@ -24,3 +24,34 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@layer base {
+  :root {
+    --background: #313338;
+    --secondary: #232428;
+    --card: #2b2d31;
+    --border: #232428;
+    --text: #b9bbbe;
+    --discord-purple: #5865F2; /* Discord's purple color */
+  }
+}
+
+.bg-discord-dark-bg {
+  background-color: var(--background);
+}
+
+.bg-discord-dark-secondary {
+  background-color: var(--secondary);
+}
+
+.bg-discord-dark-card {
+  background-color: var(--card);
+}
+
+.border-discord-dark-border {
+  border-color: var(--border);
+}
+
+.text-discord-dark-text {
+  color: var(--text);
+}
