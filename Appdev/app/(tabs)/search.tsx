@@ -51,7 +51,7 @@ const SearchContentScreen = () => {
     setLoading(true);
     try {
       // Fetch content
-      const contentResponse = await fetch("http://localhost:8000/api/generate-content/", {
+      const contentResponse = await fetch("http://172.16.14.94:8000/api/generate-content/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -62,7 +62,7 @@ const SearchContentScreen = () => {
       setContent(contentData);
 
       // Fetch video links
-      const videoResponse = await fetch("http://localhost:8000/api/video-links/", {
+      const videoResponse = await fetch("http://172.16.14.94:8000/api/video-links/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -42,7 +42,7 @@ const TakeTest = () => {
       }
 
       try {
-        const response = await fetch("http://localhost:8000/api/generate-questions/", {
+        const response = await fetch("http:// 172.16.14.94:8000/api/generate-questions/", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
