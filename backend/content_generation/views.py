@@ -10,9 +10,21 @@ from .serializers import GeneratedContentSerializer
 from .utils import generate_lesson_pdf_from_topic
 import json
 import logging
+import asyncio
 
 # Set up logging
 logger = logging.getLogger(__name__)
+
+# Helper function to get or create an event loop safely
+def get_or_create_eventloop():
+    try:
+        return asyncio.get_event_loop()
+    except RuntimeError as ex:
+        if "There is no current event loop in thread" in str(ex):
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            return loop
+        raise
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -114,12 +126,29 @@ async def generate_questions(request):
         num_questions = data.get('num_questions', 5)
         difficulty = data.get('difficulty', 'easy')
         
-        # Properly await the coroutine
-        questions = await agent.generate_questions(
-            str(content),
-            num_questions=num_questions,
-            difficulty=difficulty
-        )
+        # Try to use the existing event loop safely
+        try:
+            # Get the current event loop or create a new one if needed
+            loop = get_or_create_eventloop()
+            questions = await agent.generate_questions(
+                str(content),
+                num_questions=num_questions,
+                difficulty=difficulty
+            )
+        except Exception as loop_error:
+            # If there's an event loop error, create a new one and try again
+            if "Event loop is closed" in str(loop_error):
+                logger.info("Event loop was closed. Creating a new one...")
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                questions = await agent.generate_questions(
+                    str(content),
+                    num_questions=num_questions,
+                    difficulty=difficulty
+                )
+            else:
+                # Re-raise if it's not an event loop issue
+                raise
         
         # Convert each ResponseQuestions object to a dictionary
         serialized_questions = []
