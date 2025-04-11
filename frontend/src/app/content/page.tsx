@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import Link from 'next/link';
 import Navbar from '../../components/Navbar'; // Import the Navbar component
+import QuizButton from '../../components/QuizButton';
 
 interface Content {
   topic: string;
@@ -35,6 +36,13 @@ const ContentGenerationPage = () => {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [showAllHistory, setShowAllHistory] = useState(false);
 
+  const [quizQuestions, setQuizQuestions] = useState<any[]>([]);
+  const [quizLoading, setQuizLoading] = useState(false);
+  const [userAnswers, setUserAnswers] = useState<{[key: number]: string}>({});
+  const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [quizScore, setQuizScore] = useState<number | null>(null);
+  const [answerResults, setAnswerResults] = useState<{[key: number]: boolean}>({});
+
   const { isAuthenticated, getToken } = useAuth();
 
   // Add this code near the top of your component
@@ -61,7 +69,7 @@ const ContentGenerationPage = () => {
       try {
         const token = await getToken();
         if (!token) {
-          console.error('Authentication required to fetch history');
+          console.error('Authentication requirose to fetch history');
           return;
         }
 
@@ -103,7 +111,7 @@ const ContentGenerationPage = () => {
     try {
       const token = await getToken();
       if (!token) {
-        setError('Authentication required. Please log in again.');
+        setError('Authentication requirose. Please log in again.');
         return;
       }
 
@@ -139,7 +147,7 @@ const ContentGenerationPage = () => {
         setSearchHistory(historyData);
       }
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
+      setError(err.message || 'An unexpected error occurrose.');
     } finally {
       setLoading(false);
     }
@@ -157,6 +165,33 @@ const ContentGenerationPage = () => {
 
   // Get visible history items based on showAllHistory state
   const visibleHistory = showAllHistory ? searchHistory : searchHistory.slice(0, 5);
+
+  const handleQuizGenerated = (questions: any[]) => {
+    setQuizQuestions(questions);
+    setUserAnswers({});
+    setQuizSubmitted(false);
+    setQuizScore(null);
+  };
+
+  // Example usage in parent component
+  const handleAnswerSelection = (questionIndex: number, selectedOption: 'a' | 'b' | 'c' | 'd') => {
+    if (!quizQuestions[questionIndex]) return;
+    
+    const question = quizQuestions[questionIndex];
+    
+    // Method 1: Using the checkAnswer method
+    const isCorrect = question.checkAnswer(selectedOption);
+    
+    // Method 2: Direct comparison if you prefer
+    const selectedText = question[`option_${selectedOption}`];
+    const isCorrectAlt = selectedText === question.answer_string;
+    
+    // Update the user's answer
+    setUserAnswers(prev => ({
+      ...prev,
+      [questionIndex]: selectedOption.toUpperCase()
+    }));
+  };
 
   return (
     <div className="min-h-screen bg-[#36393f] text-white flex flex-col">
@@ -275,9 +310,9 @@ const ContentGenerationPage = () => {
                 </div>
 
                 {error && (
-                  <div className="mx-6 my-4 text-red-300 p-4 bg-red-900 bg-opacity-20 rounded-lg border border-red-500">
+                  <div className="mx-6 my-4 text-rose-300 p-4 bg-rose-900 bg-opacity-20 rounded-lg border border-rose-500">
                     <p className="flex items-start">
-                      <span className="text-red-400 mr-2">⚠️</span>
+                      <span className="text-rose-400 mr-2">⚠️</span>
                       {error}
                     </p>
                   </div>
@@ -323,6 +358,272 @@ const ContentGenerationPage = () => {
                         </div>
                       ))}
                   </div>
+                </div>
+              )}
+
+              {content && (
+                <div className="mt-6 bg-[#2f3136] rounded-xl shadow-lg border border-[#202225] overflow-hidden">
+                  <div className="p-6 border-b border-[#40444b] flex items-center justify-between">
+                    <h3 className="text-xl font-bold flex items-center">
+                      <span className="text-[#8e6bff] mr-2">🧠</span> Quiz
+                    </h3>
+                    
+                    <QuizButton 
+                      content={content}
+                      difficulty={difficulty}
+                      onQuizGenerated={handleQuizGenerated}
+                    />
+                  </div>
+                  
+                  {quizQuestions.length > 0 && (
+                    <div className="p-6">
+                      {/* Quiz header with progress information */}
+                      <div className="flex justify-between items-center mb-6">
+                        <h4 className="text-lg font-semibold flex items-center">
+                          <span className="text-[#8e6bff] mr-2">📝</span> 
+                          Quiz Questions
+                        </h4>
+                        {!quizSubmitted && (
+                          <div className="text-sm text-[#b9bbbe]">
+                            Answerose: {Object.keys(userAnswers).length} of {quizQuestions.length}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Progress bar */}
+                      {!quizSubmitted && (
+                        <div className="w-full h-2 bg-[#40444b] rounded-full mb-6 overflow-hidden">
+                          <div 
+                            className="h-full bg-[#8e6bff] rounded-full transition-all duration-300"
+                            style={{ width: `${(Object.keys(userAnswers).length / quizQuestions.length) * 100}%` }}
+                          ></div>
+                        </div>
+                      )}
+
+                      <div className="space-y-6">
+                        {quizQuestions.map((question, index) => (
+                          <div 
+                            key={index} 
+                            className={`bg-[#202225] rounded-lg p-5 border transition-all duration-300 ${
+                              quizSubmitted 
+                                ? answerResults[index] 
+                                  ? 'border-emerald-500 shadow-md shadow-emerald-900/20' 
+                                  : 'border-rose-500 shadow-md shadow-rose-900/20' 
+                                : 'border-[#40444b] hover:border-[#8e6bff]'
+                            }`}
+                          >
+                            {/* Question header with number and result indicator */}
+                            <div className="flex justify-between items-start mb-4">
+                              <div className="flex items-center">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 text-white font-semibold ${
+                                  quizSubmitted 
+                                    ? answerResults[index] ? 'bg-emerald-500' : 'bg-rose-500'
+                                    : 'bg-[#8e6bff]'
+                                }`}>
+                                  {index + 1}
+                                </div>
+                                <p className="font-medium text-lg">{question.question}</p>
+                              </div>
+                              {quizSubmitted && (
+                                <span className={`text-xl ${answerResults[index] ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                  {answerResults[index] ? '✓' : '✗'}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Answer options with improved UI */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-11">
+                              {['a', 'b', 'c', 'd'].map((option) => (
+                                <div 
+                                  key={option}
+                                  onClick={() => {
+                                    if (!quizSubmitted) {
+                                      setUserAnswers(prev => ({
+                                        ...prev,
+                                        [index]: option.toUpperCase()
+                                      }));
+                                    }
+                                  }}
+                                  className={`p-3 rounded-lg border transition-all duration-200 transform ${
+                                    userAnswers[index] === option.toUpperCase() && !quizSubmitted
+                                      ? 'scale-102 -translate-y-1' : ''
+                                  } ${
+                                    userAnswers[index] === option.toUpperCase()
+                                      ? quizSubmitted
+                                        ? option.toUpperCase() === question.answer_option.toUpperCase()
+                                          ? 'bg-emerald-500 bg-opacity-20 border-emerald-500'
+                                          : 'bg-rose-500 bg-opacity-20 border-rose-500'
+                                        : 'bg-[#8e6bff] bg-opacity-20 border-[#8e6bff]'
+                                      : quizSubmitted && option.toUpperCase() === question.answer_option.toUpperCase()
+                                        ? 'bg-emerald-500 bg-opacity-10 border-emerald-500 border-dashed'
+                                        : 'bg-[#36393f] border-[#40444b] hover:bg-[#2c2e33]'
+                                  } ${!quizSubmitted ? 'cursor-pointer hover:border-[#8e6bff] hover:shadow-sm' : ''}`}
+                                >
+                                  <div className="flex items-center">
+                                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs mr-3 flex-shrink-0 ${
+                                      userAnswers[index] === option.toUpperCase()
+                                        ? quizSubmitted
+                                          ? option.toUpperCase() === question.answer_option.toUpperCase()
+                                            ? 'bg-emerald-500 text-white'
+                                            : 'bg-rose-500 text-white'
+                                          : 'bg-[#8e6bff] text-white'
+                                        : quizSubmitted && option.toUpperCase() === question.answer_option.toUpperCase()
+                                          ? 'bg-emerald-500 bg-opacity-30 text-emerald-200 border border-emerald-500'
+                                          : 'bg-[#40444b] text-[#b9bbbe]'
+                                    }`}>
+                                      {option.toUpperCase()}
+                                    </span>
+                                    <span className="flex-1">{question[`option_${option}`]}</span>
+                                    {quizSubmitted && option.toUpperCase() === question.answer_option.toUpperCase() && (
+                                      <span className="ml-2 text-emerald-400 flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                        </svg>
+                                        Correct
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                            
+                            {/* Feedback for wrong answers */}
+                            {quizSubmitted && !answerResults[index] && (
+                              <div className="mt-0  bg-opacity-20 rounded-lg p-3 ml-11">
+                                <p className="text-yellow-300 flex items-center">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9a1 1 0 00-1-1z" clipRule="evenodd" />
+                                  </svg>
+                                  The correct answer was: <span className="font-semibold ml-1">{question.answer_string}</span>
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* Quiz actions - Submit or Results */}
+                      {!quizSubmitted ? (
+                        <div className="mt-8 flex justify-between items-center">
+                          <p className="text-sm text-[#b9bbbe]">
+                            {Object.keys(userAnswers).length < quizQuestions.length ? 
+                              `Please answer all ${quizQuestions.length - Object.keys(userAnswers).length} remaining questions` : 
+                              'Ready to submit your answers!'}
+                          </p>
+                          <button
+                            onClick={() => {
+                              // Calculate score
+                              let score = 0;
+                              const results: {[key: number]: boolean} = {};
+                              
+                              quizQuestions.forEach((question, index) => {
+                                if (userAnswers[index]) {
+                                  const correctOption = question.answer_option.toUpperCase();
+                                  const isCorrect = userAnswers[index] === correctOption;
+                                  
+                                  results[index] = isCorrect;
+                                  if (isCorrect) {
+                                    score++;
+                                  }
+                                } else {
+                                  // Mark unanswerose questions as incorrect
+                                  results[index] = false;
+                                }
+                              });
+                              
+                              setAnswerResults(results);
+                              setQuizScore(score);
+                              setQuizSubmitted(true);
+                            }}
+                            disabled={Object.keys(userAnswers).length < quizQuestions.length}
+                            className="py-2 px-6 bg-[#8e6bff] hover:bg-[#7b5ce5] text-white font-bold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[#8e6bff] disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Submit Quiz
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="mt-8 bg-[#202225] rounded-lg p-6 border border-[#40444b]">
+                          <h4 className="text-lg font-semibold mb-4">Quiz Results</h4>
+                          
+                          {/* Score display with percentage */}
+                          <div className="flex items-center mb-6">
+                            <div className="relative w-24 h-24 mr-6">
+                              <svg className="w-24 h-24" viewBox="0 0 36 36">
+                                <path
+                                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                  fill="none"
+                                  stroke="#40444b"
+                                  strokeWidth="3"
+                                />
+                                <path
+                                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                  fill="none"
+                                  stroke={quizScore! / quizQuestions.length >= 0.7 ? "#4ade80" : quizScore! / quizQuestions.length >= 0.4 ? "#facc15" : "#ef4444"}
+                                  strokeWidth="3"
+                                  strokeDasharray={`${(quizScore! / quizQuestions.length) * 100}, 100`}
+                                  strokeLinecap="round"
+                                />
+                              </svg>
+                              <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center text-xl font-bold">
+                                {Math.round((quizScore! / quizQuestions.length) * 100)}%
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <p className="text-2xl font-bold text-white">
+                                {quizScore} / {quizQuestions.length} correct
+                              </p>
+                              <p className="text-[#b9bbbe] mt-1">
+                                {quizScore! / quizQuestions.length >= 0.8 ? 
+                                  "Excellent work! You've masterose this topic!" : 
+                                  quizScore! / quizQuestions.length >= 0.6 ? 
+                                    "Good job! You have a solid understanding." : 
+                                    "Keep practicing to improve your knowledge."}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          {/* Action buttons */}
+                          <div className="flex flex-wrap gap-3">
+                            <button
+                              onClick={() => {
+                                setUserAnswers({});
+                                setQuizSubmitted(false);
+                                setQuizScore(null);
+                              }}
+                              className="py-2 px-6 bg-[#8e6bff] hover:bg-[#7b5ce5] text-white font-bold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[#8e6bff] flex items-center"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                              </svg>
+                              Try Again
+                            </button>
+                            
+                            <button
+                              onClick={() => {
+                                // Scroll to the first incorrect answer
+                                const firstIncorrectIndex = Object.entries(answerResults)
+                                  .find(([_, isCorrect]) => !isCorrect)?.[0];
+                                    
+                                if (firstIncorrectIndex) {
+                                  document.querySelectorAll('.quiz-question')[Number(firstIncorrectIndex)]?.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'center'
+                                  });
+                                }
+                              }}
+                              className="py-2 px-6 bg-[#40444b] hover:bg-[#36393f] text-white font-bold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[#8e6bff] flex items-center"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                              </svg>
+                              Review Answers
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
