@@ -11,6 +11,17 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Helper function to get or create an event loop safely
+def get_or_create_eventloop():
+    try:
+        return asyncio.get_event_loop()
+    except RuntimeError as ex:
+        if "There is no current event loop in thread" in str(ex):
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            return loop
+        raise
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def chat_response(request):
@@ -38,13 +49,25 @@ def chat_response(request):
         # Create an instance of the ChatBotAgent
         agent = ChatBotAgent()
         
-        # Generate response using event loop
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        chat_response = loop.run_until_complete(
-            agent.generate_response(question=question, content=content)
-        )
-        loop.close()
+        # Try to use the existing event loop safely
+        try:
+            # Get the current event loop or create a new one if needed
+            loop = get_or_create_eventloop()
+            chat_response = loop.run_until_complete(
+                agent.generate_response(question=question, content=content)
+            )
+        except Exception as loop_error:
+            # If there's an event loop error, create a new one and try again
+            if "Event loop is closed" in str(loop_error):
+                logger.info("Event loop was closed. Creating a new one...")
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                chat_response = loop.run_until_complete(
+                    agent.generate_response(question=question, content=content)
+                )
+            else:
+                # Re-raise if it's not an event loop issue
+                raise
 
         # Convert the Pydantic model to a dictionary
         response_data = json.loads(chat_response.json())
