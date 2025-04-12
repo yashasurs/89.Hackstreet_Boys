@@ -1,8 +1,8 @@
-import { Text, View, Image, ScrollView, TouchableOpacity } from "react-native";
+import React from "react";
+import { Text, View, Image, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
 import { useRouter, Redirect } from "expo-router";
-import SearchBar from "@/app/components/SearchBar";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function Index() {
@@ -13,133 +13,223 @@ export default function Index() {
     return <Redirect href="../screen/register" />;
   }
 
-  const categories = ["Programming", "Math", "Science", "AI", "Design"];
+  const features = [
+    {
+      title: "PDF Generation",
+      description: "Convert your content into beautifully formatted PDF documents with one click.",
+      icon: icons.pdf, // Ensure this icon exists in your icons file
+    },
+    {
+      title: "Custom Lesson Plans",
+      description: "Create personalized lesson plans tailored to specific learning objectives.",
+      icon: icons.lesson, // Ensure this icon exists in your icons file
+    },
+    {
+      title: "AI-Powered Content",
+      description: "Leverage advanced AI to generate high-quality educational materials.",
+      icon: icons.ai, // Ensure this icon exists in your icons file
+    },
+    {
+      title: "Interactive Quizzes",
+      description: "Engage students with interactive quizzes to test their knowledge and understanding.",
+      icon: icons.quiz, // Ensure this icon exists in your icons file
+    },
+  ];
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#0D0D0D" }}>
+    <View style={styles.container}>
+      {/* Logo Section */}
+      <View style={styles.logoContainer}>
+        <Image source={icons.logo} style={styles.logo} />
+        <Text style={styles.logoText}>BrightMind</Text>
+      </View>
+
       {/* Background Image */}
       <Image
         source={images.bg}
-        style={{
-          position: "absolute",
-          width: "100%",
-          height: "100%",
-          zIndex: 0,
-        }}
+        style={styles.backgroundImage}
         resizeMode="cover"
         blurRadius={2}
       />
 
       <ScrollView
-        style={{ flex: 1, paddingHorizontal: 20 }}
+        style={styles.scrollView}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 30 }}
+        contentContainerStyle={styles.scrollContent}
       >
-        {/* Logo */}
-        <Image
-          source={icons.logo}
-          style={{
-            width: 48,
-            height: 40,
-            marginTop: 80,
-            marginBottom: 20,
-            alignSelf: "center",
-          }}
-        />
-
-        {/* Search Bar */}
-        <View style={{ marginBottom: 30 }}>
-          <SearchBar
-            onPress={() => router.push("/search")}
-            placeholder="Search for any topic"
-          />
-        </View>
-
-        {/* Welcome Text */}
-        <View>
-        <Text style={{ color: "#fff", fontSize: 26, fontWeight: "700", marginBottom: 4 }}>
-          Hey, Learner 👋
-        </Text>
-        <Text style={{ color: "#bbb", fontSize: 15, marginBottom: 24 }}>
-          Let’s dive into something new today!
-        </Text>
-        </View>
-
-        {/* Recommended Videos */}
-
-        {/* Categories */}
-        <Text style={{ color: "#fff", fontSize: 18, fontWeight: "600", marginBottom: 12 }}>
-          Categories
-        </Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {categories.map((category, index) => (
+        {/* Hero Section */}
+        <View style={styles.heroSection}>
+          <Text style={styles.heroTitle}>
+            Transform Learning with AI-Generated Educational Content
+          </Text>
+          <Text style={styles.heroSubtitle}>
+            Create comprehensive study materials with personalized PDF generation in seconds.
+          </Text>
+          <View style={styles.heroButtons}>
             <TouchableOpacity
-              key={index}
-              style={{
-                backgroundColor: "#1A1A1A",
-                paddingVertical: 10,
-                paddingHorizontal: 18,
-                borderRadius: 24,
-                marginRight: 12,
-                shadowColor: "#8000FF",
-                shadowOpacity: 0.2,
-                shadowRadius: 10,
-              }}
+              style={styles.primaryButton}
+              onPress={() => router.push("./search")}
             >
-              <Text style={{ color: "#fff", fontSize: 14 }}>{category}</Text>
+              <Text style={styles.primaryButtonText}>Generate Content</Text>
             </TouchableOpacity>
-          ))}
-        </ScrollView>
+            <TouchableOpacity
+              style={styles.secondaryButton}
+              onPress={() => router.push("../learn-more")}
+            >
+              <Text style={styles.secondaryButtonText}>Learn More</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
-        {/* Featured Courses */}
-        <Text
-          style={{
-            color: "#fff",
-            fontSize: 18,
-            fontWeight: "600",
-            marginTop: 30,
-            marginBottom: 15,
-          }}
-        >
-          Featured Courses
+        {/* Key Features Section */}
+        <Text style={styles.sectionTitle}>Key Features</Text>
+        <Text style={styles.sectionSubtitle}>
+          Discover how BrightMind helps educators create engaging and professional learning materials.
         </Text>
-
-        {[1, 2, 3].map((item) => (
-          <TouchableOpacity
-            key={item}
-            style={{
-              backgroundColor: "#1C1C1C",
-              borderRadius: 16,
-              padding: 16,
-              marginBottom: 20,
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              shadowColor: "#9A40FF",
-              shadowOpacity: 0.15,
-              shadowRadius: 8,
-            }}
-          >
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>
-                Course Title {item}
-              </Text>
-              <Text style={{ color: "#888", fontSize: 13, marginTop: 4 }}>
-                by Instructor Name
-              </Text>
+        <View style={styles.featuresGrid}>
+          {features.map((feature, index) => (
+            <View key={index} style={styles.featureCard}>
+              <Image source={feature.icon} style={styles.featureIcon} />
+              <Text style={styles.featureTitle}>{feature.title}</Text>
+              <Text style={styles.featureDescription}>{feature.description}</Text>
             </View>
-            <Image
-              source={{ uri: "https://via.placeholder.com/60" }}
-              style={{
-                width: 60,
-                height: 60,
-                borderRadius: 12,
-                marginLeft: 10,
-              }}
-            />
-          </TouchableOpacity>
-        ))}
+          ))}
+        </View>
       </ScrollView>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#0D0D0D",
+  },
+  logoContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    backgroundColor: "#0D0D0D",
+    zIndex: 10,
+  },
+  logo: {
+    width: 32,
+    height: 32,
+    marginRight: 8,
+  },
+  logoText: {
+    color: "#8000FF",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  backgroundImage: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    zIndex: 0,
+  },
+  scrollView: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  scrollContent: {
+    paddingBottom: 30,
+  },
+  heroSection: {
+    alignItems: "center",
+    marginTop: 60,
+    marginBottom: 40,
+  },
+  heroTitle: {
+    color: "#fff",
+    fontSize: 28,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 12,
+  },
+  heroSubtitle: {
+    color: "#bbb",
+    fontSize: 16,
+    textAlign: "center",
+    marginBottom: 24,
+  },
+  heroButtons: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 12,
+  },
+  primaryButton: {
+    backgroundColor: "#8000FF",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    shadowColor: "#8000FF",
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  primaryButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  secondaryButton: {
+    backgroundColor: "#1C1C1C",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#8000FF",
+  },
+  secondaryButtonText: {
+    color: "#8000FF",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  sectionTitle: {
+    color: "#fff",
+    fontSize: 22,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  sectionSubtitle: {
+    color: "#bbb",
+    fontSize: 14,
+    textAlign: "center",
+    marginBottom: 24,
+  },
+  featuresGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  featureCard: {
+    backgroundColor: "#1C1C1C",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 20,
+    width: "48%",
+    shadowColor: "#9A40FF",
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  featureIcon: {
+    width: 40,
+    height: 40,
+    marginBottom: 12,
+  },
+  featureTitle: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+  featureDescription: {
+    color: "#bbb",
+    fontSize: 14,
+    lineHeight: 20,
+  },
+});

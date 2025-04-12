@@ -112,6 +112,17 @@ export default function Navbar() {
               <FileText size={18} />
               <span>{translate('content', 'navbar')}</span>
             </Link>
+            <Link 
+              href="/profile" 
+              className={`px-3 py-2 rounded-md transition-all duration-200 flex items-center space-x-2 ${
+                isActive('/profile') 
+                  ? 'text-white bg-[#36393f]' 
+                  : 'text-[#dcddde] hover:text-white hover:bg-[#36393f]'
+              }`}
+            >
+              <FileText size={18} />
+              <span>{translate('profile', 'navbar')}</span>
+            </Link>
           </div>
           
           <div className="flex items-center space-x-3">
