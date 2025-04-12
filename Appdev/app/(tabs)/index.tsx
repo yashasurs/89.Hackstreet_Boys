@@ -82,10 +82,12 @@ export default function Index() {
         </View>
 
         {/* Key Features Section */}
-        <Text style={styles.sectionTitle}>Key Features</Text>
-        <Text style={styles.sectionSubtitle}>
-          Discover how BrightMind helps educators create engaging and professional learning materials.
-        </Text>
+        <View>
+          <Text style={styles.sectionTitle}>Key Features</Text>
+          <Text style={styles.sectionSubtitle}>
+            Discover how BrightMind helps educators create engaging and professional learning materials.
+          </Text>
+        </View>
         <View style={styles.featuresGrid}>
           {features.map((feature, index) => (
             <View key={index} style={styles.featureCard}>
