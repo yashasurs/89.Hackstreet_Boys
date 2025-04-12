@@ -65,32 +65,3 @@ const ContentGenerator: React.FC<ContentGeneratorProps> = ({ content }) => {
 };
 
 export default ContentGenerator;
-
-import React from 'react';
-import AskAIButton from './AskAIButton';
-
-interface ContentContextProviderProps {
-  userGeneratedContent: string;
-  children?: React.ReactNode;
-}
-
-const ContentContextProvider: React.FC<ContentContextProviderProps> = ({ 
-  userGeneratedContent,
-  children 
-}) => {
-  return (
-    <div className="relative">
-      {/* The main content or editor where user creates content */}
-      <div className="content-area">
-        {children}
-      </div>
-      
-      {/* AI assistant that has access to the user's content */}
-      <AskAIButton 
-        currentContent={userGeneratedContent}
-      />
-    </div>
-  );
-};
-
-export default ContentContextProvider;
