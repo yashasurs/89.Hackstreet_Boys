@@ -228,7 +228,7 @@ const SearchContentScreen = () => {
               </View>
             ) : (
               <Text style={{ textAlign: "center", color: "#A8B5DB" }}>
-                No content to display. Search for a topic to get started.
+                {content ? content : "No content to display. Search for a topic to get started."}
               </Text>
             )}
           </>
@@ -282,6 +282,10 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 14,
     textAlign: "center",
+  },
+  optionText: {
+    color: "#FFFFFF",
+    fontSize: 14,
   },
 });
 

@@ -16,6 +16,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { images } from "@/constants/images";
+import { useAuth } from "../contexts/AuthContext";
 
 interface Question {
   question: string;
@@ -23,19 +24,27 @@ interface Question {
   option_b: string;
   option_c: string;
   option_d: string;
-  answer: string;
+  answer_option: string;
+  answer_string: string;
 }
 
 const TakeTest = () => {
-  const { content } = useLocalSearchParams(); // Retrieve content passed from search.tsx
+  const { content } = useLocalSearchParams();
+  const { token } = useAuth();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: string }>({});
-  const [score, setScore] = useState(0);
   const router = useRouter();
 
+  // Redirect to login if the user is not authenticated
   useEffect(() => {
-    const generateQuestions = async (retryCount = 3) => {
+    if (!token) {
+      router.replace("../screen/login");
+    }
+  }, [token]);
+
+  useEffect(() => {
+    const generateQuestions = async () => {
       if (!content) {
         alert("No content available to generate questions.");
         return;
@@ -46,9 +55,10 @@ const TakeTest = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Token ${token}`,
           },
           body: JSON.stringify({
-            content: JSON.parse(content as string), // Parse the content passed as a string
+            content: JSON.parse(content as string),
             num_questions: 10,
             difficulty: "hard",
           }),
@@ -59,55 +69,45 @@ const TakeTest = () => {
         }
 
         const data = await response.json();
-        setQuestions(data.questions || []); // Ensure questions is always an array
+        setQuestions(data.questions || []);
       } catch (error) {
         console.error("Error generating questions:", error);
-
-        if (retryCount > 0) {
-          console.log(`Retrying... Attempts left: ${retryCount}`);
-          setTimeout(() => generateQuestions(retryCount - 1), 2000); // Retry after 2 seconds
-        } else {
-          alert("Failed to generate questions after multiple attempts. Please try again later.");
-        }
+        alert("Failed to generate questions. Please try again later.");
       } finally {
         setLoading(false);
       }
     };
 
-    generateQuestions();
-  }, [content]);
+    if (token) {
+      generateQuestions();
+    }
+  }, [content, token]);
 
-  const handleAnswerSelect = (questionIndex: number, selectedOption: string) => {
+  const handleAnswerSelect = (questionIndex: number, selectedOption: keyof Question) => {
     setSelectedAnswers((prev) => ({
       ...prev,
-      [questionIndex]: selectedOption,
+      [questionIndex]: questions[questionIndex][selectedOption], // Store the full answer string
     }));
-
-    // Check if the selected answer is correct and update the score
-    if (questions[questionIndex].answer === selectedOption) {
-      setScore((prevScore) => prevScore + 1);
-    }
   };
 
   const handleFinishTest = () => {
     router.push({
-      pathname: "./test-score", // Navigate to test-score screen
+      pathname: "./test-score",
       params: {
-        score: score.toString(), // Pass the score
-        selectedAnswers: JSON.stringify(selectedAnswers), // Pass selected answers
-        questions: JSON.stringify(questions), // Pass questions with correct answers
+        selectedAnswers: JSON.stringify(selectedAnswers),
+        questions: JSON.stringify(questions),
       },
     });
   };
 
+  if (!token) {
+    return null;
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar hidden={true} /> {/* Hide the status bar */}
-      <Image
-        source={images.bg}
-        style={styles.backgroundImage}
-        resizeMode="cover"
-      />
+      <StatusBar hidden={true} />
+      <Image source={images.bg} style={styles.backgroundImage} resizeMode="cover" />
 
       <ScrollView contentContainerStyle={styles.content}>
         {loading ? (
@@ -125,7 +125,7 @@ const TakeTest = () => {
                       styles.optionButton,
                       selectedAnswers[index] === q[optionKey] && styles.selectedOption,
                     ]}
-                    onPress={() => handleAnswerSelect(index, q[optionKey])}
+                    onPress={() => handleAnswerSelect(index, optionKey)}
                   >
                     <Text style={styles.optionText}>{q[optionKey]}</Text>
                   </TouchableOpacity>

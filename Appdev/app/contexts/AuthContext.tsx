@@ -15,6 +15,8 @@ interface User {
 interface AuthContextType {
   user: User | null;
   token: string | null;
+  isAuthenticated: boolean;
+  getToken: () => Promise<string | null>;
   login: (token: string, user: User) => void;
   logout: () => void;
 }
@@ -26,6 +28,18 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
+
+  const isAuthenticated = !!token;
+
+  const getToken = async () => {
+    try {
+      const storedToken = await AsyncStorage.getItem("token");
+      return storedToken;
+    } catch (error) {
+      console.error("Failed to retrieve token from AsyncStorage", error);
+      return null;
+    }
+  };
 
   // Load token and user from AsyncStorage on app start
   useEffect(() => {
@@ -66,7 +80,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>
+    <AuthContext.Provider value={{ user, token, isAuthenticated, getToken, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

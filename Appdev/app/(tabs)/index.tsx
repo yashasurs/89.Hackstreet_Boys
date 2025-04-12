@@ -56,12 +56,16 @@ export default function Index() {
         </View>
 
         {/* Welcome Text */}
+        <View>
         <Text style={{ color: "#fff", fontSize: 26, fontWeight: "700", marginBottom: 4 }}>
           Hey, Learner 👋
         </Text>
         <Text style={{ color: "#bbb", fontSize: 15, marginBottom: 24 }}>
           Let’s dive into something new today!
         </Text>
+        </View>
+
+        {/* Recommended Videos */}
 
         {/* Categories */}
         <Text style={{ color: "#fff", fontSize: 18, fontWeight: "600", marginBottom: 12 }}>
