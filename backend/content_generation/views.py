@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .content_generation import generate_content_for_topic
 from .question_generation import QuestionGeneratorAgent
+from .translater import TranslaterAgent
 from .models import GeneratedContent
 from .serializers import GeneratedContentSerializer
 from .utils import generate_lesson_pdf_from_topic
@@ -276,4 +277,66 @@ def generate_and_download_pdf(request):
     except Exception as e:
         logger.exception(f"PDF generation error: {str(e)}")
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@drf_api_view(['POST'])
+@permission_classes([IsAuthenticated])
+async def translate_content_view(request):
+    """
+    Translate educational content into Hindi or Kannada.
+    
+    Expected POST data:
+    {
+        "content": {
+            "topic": "Topic title",
+            "summary": "Content summary",
+            "sections": [...],
+            "references": [...],
+            "difficulty_level": "beginner|intermediate|advanced"
+        },
+        "language": "hindi" or "kannada" (optional, defaults to "hindi")
+    }
+    
+    Returns translation of the content in the specified language.
+    """
+    try:
+        # Extract data from request
+        data = request.data
+        
+        # Validate input
+        if not data:
+            return Response(
+                {"error": "Request body cannot be empty"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Extract content and language from request
+        content = data.get('content', data)  # If 'content' key doesn't exist, use entire data object
+        language = data.get('language', 'hindi').lower()
+        
+        # Create an instance of the TranslaterAgent
+        agent = TranslaterAgent()
+        
+        # Perform translation
+        logger.info(f"Starting translation to {language}...")
+        try:
+            # Get translation response
+            translation = await agent.translate_content(content, language)
+            logger.info(f"Translation to {language} completed successfully")
+            
+            # Return the translated content directly from the response
+            return Response(translation.translated_content, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Translation error: {str(e)}")
+            return Response(
+                {"error": f"Translation failed: {str(e)}"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+    except Exception as e:
+        logger.exception(f"Error in translate_content_view: {str(e)}")
+        return Response(
+            {"error": f"Failed to process translation request: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
