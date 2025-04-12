@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, ScrollView, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
 import { images } from '@/constants/images'; // Ensure this path is correct
 import { useAuth } from '@/app/contexts/AuthContext'; // Import the AuthContext
 import { Redirect } from 'expo-router';
@@ -31,13 +31,11 @@ const DoubtsScreen = () => {
                 body: JSON.stringify({ question }),
             });
 
-            console.log('Response status:', res.status); // Log the response status
             if (!res.ok) {
                 throw new Error('Failed to fetch response from the server.');
             }
 
             const data = await res.json();
-            console.log('Response data:', data); // Log the response data
 
             // Ensure the response contains the "answer" field
             if (data && data.answer) {
@@ -62,22 +60,32 @@ const DoubtsScreen = () => {
             />
 
             <ScrollView
-                style={styles.contentContainer}
+                contentContainerStyle={styles.contentContainer}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 30 }}
             >
-                <Text style={styles.title}>Ask a Question</Text>
+                {/* Title */}
+                <Text style={styles.title}>Ask AI Anything</Text>
+
+                {/* Input Field */}
                 <TextInput
                     style={styles.input}
-                    placeholder="Type your question here"
+                    placeholder="Type your question here..."
                     placeholderTextColor="#bbb"
                     value={question}
                     onChangeText={setQuestion}
                 />
-                <Button title="Ask" onPress={handleAsk} color="#8000FF" />
-                <ScrollView style={styles.responseContainer}>
-                    <Text style={styles.response}>{response}</Text>
-                </ScrollView>
+
+                {/* Ask Button */}
+                <TouchableOpacity style={styles.askButton} onPress={handleAsk}>
+                    <Text style={styles.askButtonText}>Ask</Text>
+                </TouchableOpacity>
+
+                {/* Response Container */}
+                {response ? (
+                    <View style={styles.responseContainer}>
+                        <Text style={styles.response}>{response}</Text>
+                    </View>
+                ) : null}
             </ScrollView>
         </View>
     );
@@ -95,38 +103,61 @@ const styles = StyleSheet.create({
         zIndex: 0,
     },
     contentContainer: {
-        flex: 1,
-        paddingHorizontal: 20,
-        zIndex: 1,
+        flexGrow: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
     },
     title: {
         color: '#fff',
-        fontSize: 26,
-        fontWeight: '700',
-        marginTop: 80,
+        fontSize: 28,
+        fontWeight: 'bold',
         marginBottom: 20,
         textAlign: 'center',
     },
     input: {
+        width: '100%',
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: '#444',
         borderRadius: 8,
         padding: 12,
         marginBottom: 16,
         backgroundColor: '#1A1A1A',
         color: '#fff',
+        fontSize: 16,
+    },
+    askButton: {
+        backgroundColor: '#8000FF',
+        paddingVertical: 12,
+        paddingHorizontal: 32,
+        borderRadius: 8,
+        marginBottom: 20,
+        shadowColor: '#8000FF',
+        shadowOpacity: 0.4,
+        shadowRadius: 10,
+        elevation: 5,
+    },
+    askButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
+        textAlign: 'center',
     },
     responseContainer: {
-        marginTop: 16,
-        padding: 12,
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 8,
-        backgroundColor: '#1A1A1A',
+        width: '100%',
+        backgroundColor: '#1C1C1C',
+        borderRadius: 12,
+        padding: 16,
+        marginTop: 20,
+        shadowColor: '#9A40FF',
+        shadowOpacity: 0.2,
+        shadowRadius: 10,
+        elevation: 5,
     },
     response: {
-        fontSize: 16,
         color: '#fff',
+        fontSize: 16,
+        lineHeight: 24,
     },
 });
 
