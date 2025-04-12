@@ -11,14 +11,16 @@ export type User = {
   last_name?: string;
 };
 
-type AuthContextType = {
+// Update your AuthContextType interface
+export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  token: string | null;
-  login: (token: string, refreshToken: string | null, userData: User) => void;
+  isLoading: boolean;
+  login: (username: string, password: string) => Promise<void>;
   logout: () => void;
-  getToken: () => Promise<string | null>; // Added getToken method
-};
+  getToken: () => Promise<string | null>;
+  // Add other auth methods you're using
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -57,17 +59,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const login = (newToken: string, refreshToken: string | null, userData: User) => {
+  const login = async (username: string, password: string) => {
     // Validate token before storing
-    if (!newToken) {
-      console.error('Login failed: Token is undefined or empty');
+    if (!username || !password) {
+      console.error('Login failed: Username or password is undefined or empty');
       return;
     }
     
+    // Simulate an API call to get the token and user data
+    const newToken = 'fakeToken';
+    const userData: User = { username };
+    
     localStorage.setItem('token', newToken);
-    if (refreshToken) {
-      localStorage.setItem('refreshToken', refreshToken);
-    }
     localStorage.setItem('userData', JSON.stringify(userData));
     
     setToken(newToken);
@@ -91,7 +94,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user,
         isAuthenticated,
-        token,
+        isLoading,
         login,
         logout,
         getToken // Added to the context value

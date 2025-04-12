@@ -1,435 +1,340 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
-import { Button } from '@/components/ui/button';
-import axios from 'axios';
-import { Edit, Save, X, FileText, LogOut } from 'lucide-react';
+import { User } from '@/types/users';
+import { useRouter } from 'next/navigation';
 
-// Define types for our data
-interface Profile {
-  bio: string;
-  location: string;
-  website: string;
-  [key: string]: any;
-}
-
-// Combine both ContentItem interfaces into one with all properties
-
-
-interface ProfileFormData {
-  bio: string;
-  location: string;
-  website: string;
-  [key: string]: string;
-}
-
-// Updated ContentItem interface to match the actual API response structure
-interface ContentItem {
-  id: number;
-  topic: string;
-  content: {
-    topic: string;
-    summary: string;
-    sections: {
-      title: string;
-      content: string;
-      key_points: string[];
-    }[];
-    references: string[];
-    difficulty_level: string;
-  };
-  difficulty_level: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export default function ProfilePage() {
+const ProfilePage = () => {
+  const { translate } = useLanguage();
+  const { user, isAuthenticated, isLoading, logout, getToken } = useAuth();
   const router = useRouter();
-  const { user, isAuthenticated, token, logout } = useAuth();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [userContents, setUserContents] = useState<ContentItem[]>([]);
-  const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState('profile');
-  const [formData, setFormData] = useState<ProfileFormData>({
-    bio: '',
-    location: '',
-    website: '',
-  });
-
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (!isAuthenticated && !loading) {
-      router.push('/login');
-    }
-  }, [isAuthenticated, loading, router]);
-
-  // Fetch profile data
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        // Use token from AuthContext instead of localStorage
-        if (!token) {
-          setError('Authentication required');
-          setLoading(false);
-          return;
-        }
-        
-        const response = await axios.get('http://localhost:8000/api/profile/', {
-          headers: {
-            Authorization: `Token ${token}`
-          }
-        });
-        
-        setProfile(response.data);
-        setFormData({
-          bio: response.data.bio || '',
-          location: response.data.location || '',
-          website: response.data.website || '',
-        });
-        setLoading(false);
-      } catch (err: any) {
-        console.error('Error fetching profile:', err);
-        // Check for 401 Unauthorized to handle expired tokens
-        if (err.response && err.response.status === 401) {
-          // If using refresh tokens, could trigger a token refresh here
-          setError('Session expired. Please login again.');
-          if (logout) logout();
-          router.push('/login');
-        } else {
-          setError('Failed to load profile information');
-        }
-        setLoading(false);
-      }
-    };
-
-    if (isAuthenticated && user) {
-      fetchProfile();
-    } else if (!isAuthenticated) {
-      setLoading(false);
-      setError('Please login to view your profile');
-    }
-  }, [isAuthenticated, user, token, logout, router]);
-
-  // Fetch user content
-  useEffect(() => {
-    const fetchUserContent = async () => {
-      try {
-        if (!token) return;
-        
-        const response = await axios.get('http://localhost:8000/api/user-contents/', {
-          headers: {
-            Authorization: `Token ${token}`,
-            "Content-Type": "application/json",
-          }
-        });
-        
-        // Log the response to see the actual structure
-        console.log('User content response:', response.data);
-        
-        setUserContents(response.data);
-      } catch (err: any) {
-        console.error('Error fetching user content:', err);
-        // Handle unauthorized errors
-        if (err.response && err.response.status === 401) {
-          // Handle unauthorized
-        }
-      }
-    };
-
-    if (isAuthenticated && user) {
-      fetchUserContent();
-    }
-  }, [isAuthenticated, user, token]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    try {
-      if (!token) {
-        setError('Authentication required');
-        return;
-      }
-      
-      // Log what we're sending to better debug
-      console.log('Sending profile data:', formData);
-      
-      // Replace the axios.put call with axios.patch
-      await axios.patch('http://localhost:8000/api/profile/update/', formData, {
-        headers: {
-          Authorization: `Token ${token}`,
-          "Content-Type": "application/json",
-        }
-      });
-      
-      // Update the profile state with new data
-      setProfile(prev => {
-        if (prev) {
-          return { ...prev, ...formData };
-        }
-        return formData as Profile;
-      });
-      
-      setIsEditing(false);
-    } catch (err: any) {
-      console.error('Error updating profile:', err);
-      // Log the actual error response to see what's wrong
-      if (err.response) {
-        console.error('Server error response:', err.response.data);
-        setError(`Failed to update profile: ${JSON.stringify(err.response.data)}`);
-      } else {
-        setError('Failed to update profile');
-      }
-    }
-  };
-
-  const handleCancel = () => {
-    if (profile) {
-      setFormData({
-        bio: profile.bio || '',
-        location: profile.location || '',
-        website: profile.website || '',
-      });
-    }
-    setIsEditing(false);
-  };
-
-  const handleLogout = () => {
-    if (logout) {
-      logout();
-      router.push('/login');
-    }
-  };
-
-  if (!isAuthenticated && !loading) {
-    return null; // Will redirect due to the useEffect
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#36393f] text-white">
+        <Navbar />
+        <div className="flex items-center justify-center h-[calc(100vh-64px)]">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#8e6bff]"></div>
+        </div>
+      </div>
+    );
   }
 
+  // Show login prompt if not authenticated
+  if (!isAuthenticated || !user) {
+    return (
+      <div className="min-h-screen bg-[#36393f] text-white">
+        <Navbar />
+        <div className="max-w-md mx-auto mt-20 p-6 bg-[#2f3136] rounded-xl shadow-lg">
+          <h2 className="text-xl font-bold text-center mb-4">{translate('loginRequired', 'profile')}</h2>
+          <p className="text-center text-[#b9bbbe] mb-6">{translate('loginToViewProfile', 'profile')}</p>
+          <div className="flex justify-center">
+            <a href="/login" className="bg-[#8e6bff] hover:bg-[#7b5ce5] text-white px-6 py-2 rounded-md transition-colors">
+              {translate('login', 'navbar')}
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle account deletion
+  const handleDeleteAccount = async () => {
+    try {
+      setIsDeleting(true);
+      setDeleteError('');
+      
+      const token = await getToken();
+      
+      const response = await fetch('http://localhost:8000/api/profile/delete/', {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to delete account: ${response.statusText}`);
+      }
+      
+      // Account deleted successfully, log the user out
+      await logout();
+      
+      // Redirect to home page
+      router.push('/');
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      setDeleteError(error instanceof Error ? error.message : 'Failed to delete account');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
+  // Add this function to handle password change:
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Reset states
+    setPasswordError('');
+    setPasswordSuccess('');
+    
+    // Validate passwords
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPasswordError(translate('allFieldsRequired', 'profile'));
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      setPasswordError(translate('passwordsDoNotMatch', 'profile'));
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      setPasswordError(translate('passwordTooShort', 'profile'));
+      return;
+    }
+    
+    try {
+      setIsChangingPassword(true);
+      
+      const token = await getToken();
+      
+      const response = await fetch('http://localhost:8000/api/profile/change-password/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          old_password: currentPassword,
+          new_password: newPassword
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || `Error: ${response.status}`);
+      }
+      
+      // Clear form fields on success
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setPasswordSuccess(translate('passwordUpdated', 'profile'));
+      
+      // Hide success message after 5 seconds
+      setTimeout(() => {
+        setPasswordSuccess('');
+      }, 5000);
+      
+    } catch (error) {
+      console.error('Error changing password:', error);
+      setPasswordError(error instanceof Error ? error.message : 'Failed to change password');
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  // Using only standard User properties
+  const displayName = user.username || 'User';
+  const userEmail = user.email || 'No email provided';
+  const userInitial = displayName.charAt(0).toUpperCase();
+
   return (
-    <div className="min-h-screen flex flex-col bg-[#36393f] text-white">
+    <div className="min-h-screen bg-[#36393f] text-white">
       <Navbar />
       
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-[#8e6bff]">My Profile</h1>
-          <Button 
-            variant="ghost" 
-            className="text-[#dcddde] hover:text-white"
-            onClick={handleLogout}
-          >
-            <LogOut className="h-4 w-4 mr-2" /> Logout
-          </Button>
-        </div>
+      <div className="max-w-5xl mx-auto py-10 px-4">
+        <h1 className="text-3xl font-bold mb-8 text-center text-[#8e6bff]">
+          {translate('title', 'profile')}
+        </h1>
         
-        {/* Tabs remain the same */}
-        <div className="mb-6">
-          <div className="flex border-b border-[#40444b]">
-            <button 
-              onClick={() => setActiveTab('profile')} 
-              className={`px-4 py-2 font-medium ${activeTab === 'profile' 
-                ? 'text-[#8e6bff] border-b-2 border-[#8e6bff]' 
-                : 'text-[#dcddde]'}`}
-            >
-              Profile Information
-            </button>
-            <button 
-              onClick={() => setActiveTab('content')} 
-              className={`px-4 py-2 font-medium ${activeTab === 'content' 
-                ? 'text-[#8e6bff] border-b-2 border-[#8e6bff]' 
-                : 'text-[#dcddde]'}`}
-            >
-              My Content
-            </button>
-          </div>
-        </div>
-        
-        {/* Profile Tab Content - No changes needed */}
-        {activeTab === 'profile' && (
-          <div className="bg-[#2f3136] rounded-lg shadow-md border border-[#40444b]">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-[#8e6bff]">Profile Details</h2>
-                {!isEditing && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setIsEditing(true)}
-                    className="text-[#dcddde] hover:text-white"
-                  >
-                    <Edit className="h-4 w-4 mr-2" /> Edit
-                  </Button>
-                )}
+        {/* Personal Information Section */}
+        <div className="bg-[#2f3136] rounded-xl shadow-lg p-6 mb-6 border border-[#202225]">
+          <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-[#40444b]">
+            {translate('personalInfo', 'profile')}
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* User information fields */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-[#b9bbbe] text-sm font-bold mb-2">
+                  {translate('name', 'profile')}
+                </label>
+                <div className="text-white">{displayName}</div>
               </div>
-              <p className="text-[#b9bbbe] mb-4">Manage your personal information</p>
               
-              {/* Rest of the profile section remains the same */}
-              {loading ? (
-                <p className="text-[#dcddde]">Loading profile information...</p>
-              ) : error ? (
-                <p className="text-red-400">{error}</p>
-              ) : isEditing ? (
-                <form onSubmit={handleSubmit}>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-[#dcddde] text-sm mb-1 block">Username</label>
-                      <input 
-                        value={user?.username || user?.email || ''}
-                        disabled
-                        className="w-full px-3 py-2 bg-[#40444b] border border-[#40444b] rounded-md text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[#dcddde] text-sm mb-1 block">Bio</label>
-                      <textarea 
-                        name="bio"
-                        value={formData.bio}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 bg-[#40444b] border border-[#40444b] rounded-md text-white"
-                        rows={3}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[#dcddde] text-sm mb-1 block">Location</label>
-                      <input 
-                        name="location"
-                        value={formData.location}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 bg-[#40444b] border border-[#40444b] rounded-md text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[#dcddde] text-sm mb-1 block">Website</label>
-                      <input 
-                        name="website"
-                        value={formData.website}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 bg-[#40444b] border border-[#40444b] rounded-md text-white"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-end space-x-2 mt-6">
-                    <Button 
-                      type="button"
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={handleCancel}
-                      className="text-[#dcddde] hover:text-white"
-                    >
-                      <X className="h-4 w-4 mr-2" /> Cancel
-                    </Button>
-                    <Button 
-                      type="submit" 
-                      variant="default" 
-                      size="sm"
-                      className="bg-[#8e6bff] hover:bg-[#7b5ce5] text-white"
-                    >
-                      <Save className="h-4 w-4 mr-2" /> Save
-                    </Button>
-                  </div>
-                </form>
-              ) : (
-                <div>
-                  <h2 className="text-xl font-semibold mb-4 text-white">
-                    {user?.username || user?.email || 'User'}
-                  </h2>
-                  <p className="text-[#dcddde] mb-2">Email: {user?.email}</p>
-                  <p className="text-[#dcddde] mb-2">Bio: {profile?.bio || 'No bio provided'}</p>
-                  <p className="text-[#dcddde] mb-2">Location: {profile?.location || 'Not specified'}</p>
-                  <p className="text-[#dcddde] mb-2">Website: {profile?.website || 'Not specified'}</p>
-                </div>
-              )}
+              <div>
+                <label className="block text-[#b9bbbe] text-sm font-bold mb-2">
+                  {translate('email', 'profile')}
+                </label>
+                <div className="text-white">{userEmail}</div>
+              </div>
+              
+              <div>
+                <label className="block text-[#b9bbbe] text-sm font-bold mb-2">
+                  {translate('role', 'profile')}
+                </label>
+                <div className="text-white">User</div>
+              </div>
+            </div>
+            
+          </div>
+          
+          <div className="mt-6">
+            <label className="block text-[#b9bbbe] text-sm font-bold mb-2">
+              {translate('bio', 'profile')}
+            </label>
+            <div className="text-white bg-[#202225] p-4 rounded-md min-h-[100px]">
+              No bio provided yet.
             </div>
           </div>
-        )}
+          
+          <div className="mt-6 flex justify-end">
+            <button className="bg-[#8e6bff] hover:bg-[#7b5ce5] text-white px-6 py-2 rounded-md transition-colors">
+              {translate('editProfile', 'profile')}
+            </button>
+          </div>
+        </div>
         
-        {/* Content Tab - Updated to match actual data structure */}
-        {activeTab === 'content' && (
-          <div className="bg-[#2f3136] rounded-lg shadow-md border border-[#40444b]">
-            <div className="p-6">
-              <h2 className="text-xl font-semibold mb-2 text-[#8e6bff]">My Content</h2>
-              <p className="text-[#b9bbbe] mb-4">Manage your educational content</p>
-              
-              {userContents.length > 0 ? (
-                <ul className="space-y-4">
-                  {userContents.map((content) => (
-                    <li key={content.id} className="p-4 bg-[#36393f] rounded-md border border-[#40444b]">
-                      <div className="flex items-start">
-                        <FileText className="h-5 w-5 text-[#8e6bff] mr-3 mt-1 flex-shrink-0" />
-                        <div className="flex-1 overflow-hidden">
-                          {/* Topic as title */}
-                          <h3 className="text-white font-medium mb-1">
-                            {content.topic || "Untitled Content"}
-                          </h3>
-                          
-                          {/* Created date */}
-                          <div className="flex items-center mb-2">
-                            <p className="text-xs text-[#b9bbbe]">
-                              Created: {content.created_at 
-                                ? new Date(content.created_at).toLocaleDateString() 
-                                : 'Date not available'}
-                            </p>
-                          </div>
-                          
-                          {/* Display summary */}
-                          {content.content?.summary && (
-                            <p className="text-sm text-[#dcddde] mb-2 line-clamp-2">
-                              {content.content.summary}
-                            </p>
-                          )}
-                          
-                          {/* Display section count */}
-                          {content.content?.sections && (
-                            <p className="text-xs text-[#b9bbbe] mb-2">
-                              {content.content.sections.length} section{content.content.sections.length !== 1 ? 's' : ''}
-                            </p>
-                          )}
-                          
-                          {/* Display difficulty level and other metadata */}
-                          <div className="grid grid-cols-2 gap-2 mt-3 text-xs text-[#b9bbbe]">
-                            {content.difficulty_level && (
-                              <span className="bg-[#2f3136] px-2 py-1 rounded">
-                                Difficulty: {content.difficulty_level}
-                              </span>
-                            )}
-                            {content.content?.references && content.content.references.length > 0 && (
-                              <span className="bg-[#2f3136] px-2 py-1 rounded">
-                                {content.content.references.length} reference{content.content.references.length !== 1 ? 's' : ''}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-[#dcddde]">You haven't created any content yet</p>
-                  <Button 
-                    variant="default"
-                    className="mt-4 bg-[#8e6bff] hover:bg-[#7b5ce5] text-white"
-                    onClick={() => router.push('/content')}
-                  >
-                    Create Content
-                  </Button>
-                </div>
-              )}
+        
+        
+        {/* Password Change Section */}
+        <div className="bg-[#2f3136] rounded-xl shadow-lg p-6 mb-6 border border-[#202225]">
+          <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-[#40444b]">
+            {translate('changePassword', 'profile')}
+          </h2>
+          
+          {passwordError && (
+            <div className="mb-4 p-3 bg-red-900 bg-opacity-20 text-red-300 rounded-md border border-red-800">
+              {passwordError}
             </div>
+          )}
+          
+          {passwordSuccess && (
+            <div className="mb-4 p-3 bg-green-900 bg-opacity-20 text-green-300 rounded-md border border-green-800">
+              {passwordSuccess}
+            </div>
+          )}
+          
+          <form onSubmit={handleChangePassword} className="space-y-4">
+            <div>
+              <label className="block text-[#b9bbbe] text-sm font-bold mb-2">
+                {translate('currentPassword', 'profile')}
+              </label>
+              <input 
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className="w-full py-2 px-3 bg-[#202225] text-white rounded-md border border-[#40444b] focus:border-[#8e6bff] focus:outline-none"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-[#b9bbbe] text-sm font-bold mb-2">
+                {translate('newPassword', 'profile')}
+              </label>
+              <input 
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full py-2 px-3 bg-[#202225] text-white rounded-md border border-[#40444b] focus:border-[#8e6bff] focus:outline-none"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-[#b9bbbe] text-sm font-bold mb-2">
+                {translate('confirmPassword', 'profile')}
+              </label>
+              <input 
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full py-2 px-3 bg-[#202225] text-white rounded-md border border-[#40444b] focus:border-[#8e6bff] focus:outline-none"
+              />
+            </div>
+            
+            <div className="mt-6 flex justify-end">
+              <button 
+                type="submit"
+                disabled={isChangingPassword}
+                className="bg-[#8e6bff] hover:bg-[#7b5ce5] text-white px-6 py-2 rounded-md transition-colors flex items-center"
+              >
+                {isChangingPassword && (
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                )}
+                {translate('updatePassword', 'profile')}
+              </button>
+            </div>
+          </form>
+        </div>
+        
+        {/* Delete Account Section */}
+        <div className="bg-[#2f3136] rounded-xl shadow-lg p-6 border border-[#202225]">
+          <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-[#40444b] text-red-400">
+            {translate('deleteAccount', 'profile')}
+          </h2>
+          
+          <p className="text-[#b9bbbe] mb-4">
+            {translate('deleteAccountWarning', 'profile')}
+          </p>
+          
+          {deleteError && (
+            <div className="mb-4 p-3 bg-red-900 bg-opacity-20 text-red-300 rounded-md border border-red-800">
+              {deleteError}
+            </div>
+          )}
+          
+          <div className="flex justify-end">
+            {showDeleteConfirm ? (
+              <div className="flex items-center gap-3">
+                <span className="text-red-300">Are you sure?</span>
+                <button 
+                  onClick={handleDeleteAccount}
+                  disabled={isDeleting}
+                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-md transition-colors flex items-center"
+                >
+                  {isDeleting && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                  )}
+                  {translate('confirmDelete', 'profile')}
+                </button>
+                <button 
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="bg-[#4f545c] hover:bg-[#5d6269] text-white px-4 py-2 rounded-md transition-colors"
+                >
+                  {translate('cancel', 'profile')}
+                </button>
+              </div>
+            ) : (
+              <button 
+                onClick={() => setShowDeleteConfirm(true)} 
+                className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-md transition-colors"
+              >
+                {translate('deleteAccount', 'profile')}
+              </button>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default ProfilePage;
