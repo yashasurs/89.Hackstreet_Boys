@@ -149,11 +149,12 @@ export default function ProfilePage() {
             <div className="bg-red-500 bg-opacity-20 border border-red-500 text-white px-4 py-3 rounded">
               {error}
             </div>
+            
           ) : profile ? (
             <ProfileForm profile={profile} onSave={handleSaveProfile} />
           ) : null}
         </div>
-        
+
       </main>
     </div>
     </>
