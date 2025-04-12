@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import ProfileForm from '@/components/profile/ProfileForm'
 import { useRouter } from 'next/navigation'
+import Navbar from '@/components/Navbar'
 
 type Profile = {
   user: {
@@ -132,6 +133,8 @@ export default function ProfilePage() {
   }
 
   return (
+    <>
+    <Navbar />
     <div className="min-h-screen bg-[#36393f] flex flex-col">
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto bg-[#2f3136] rounded-lg shadow-lg p-6">
@@ -151,5 +154,6 @@ export default function ProfilePage() {
         </div>
       </main>
     </div>
+    </>
   )
 }

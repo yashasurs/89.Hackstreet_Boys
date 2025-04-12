@@ -1,0 +1,590 @@
+'use client'
+
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+
+type LanguageContextType = {
+  language: string;
+  setLanguage: (language: string) => void;
+  translate: (text: string, section: string) => string;
+};
+
+const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+
+// Add navbar translations and expand existing sections
+const translations = {
+  english: {
+    navbar: {
+      appName: "BrightMind",
+      home: "Home",
+      content: "Content",
+      about: "About",
+      profile: "Profile",
+      login: "Login"
+    },
+    hero: {
+      title: "Transform Learning with AI-Generated Educational Content",
+      description: "Create comprehensive study materials with personalized PDF generation in seconds.",
+      getStarted: "Get Started",
+      learnMore: "Learn More",
+      contentGeneration: "Generate Content",
+    },
+    features: {
+      keyFeatures: "Key Features",
+      discover: "Discover how BrightMind helps educators create engaging and professional learning materials",
+      pdfGeneration: "PDF Generation",
+      pdfGenerationDescription: "Convert your content into beautifully formatted PDF documents with one click",
+      customLessonPlans: "Custom Lesson Plans",
+      customLessonPlansDescription: "Create personalized lesson plans tailored to specific learning objectives",
+      aiPoweredContent: "AI-Powered Content",
+      aiPoweredContentDescription: "Leverage advanced AI to generate high-quality educational materials",
+      collaborativeLearning: "Collaborative Learning",
+      collaborativeLearningDescription: "Share and collaborate on content with colleagues and students",
+      assessmentTools: "Assessment Tools",
+      assessmentToolsDescription: "Create quizzes, tests, and assessments for your students",
+      customizableTemplates: "Customizable Templates",
+      customizableTemplatesDescription: "Choose from a variety of templates to match your teaching style"
+    },
+    demo: {
+      oneClickPdfGeneration: "One-Click PDF Generation",
+      oneClickPdfGenerationDescription: "Transform your content into professionally formatted PDF documents instantly",
+      professionallyFormattedDocuments: "Professionally formatted documents",
+      instantDownloads: "Instant downloads",
+      customizableStylingOptions: "Customizable styling options",
+      tryItNow: "Try It Now",
+      quantumPhysicsLesson: "Quantum Physics Lesson",
+      quantumPhysicsLessonDescription: "An advanced lesson on quantum mechanics principles for high school physics",
+      advanced: "Advanced",
+      downloadAsPdf: "Download as PDF"
+    },
+    howItWorks: {
+      howItWorks: "How It Works",
+      chooseYourTopic: "Choose Your Topic",
+      chooseYourTopicDescription: "Select from a wide range of subjects or create your own custom topic",
+      customizeOptions: "Customize Options",
+      customizeOptionsDescription: "Adjust difficulty level, length, and format to match your teaching needs",
+      generateContent: "Generate Content",
+      generateContentDescription: "Our AI creates comprehensive, engaging educational content in seconds",
+      downloadAsPdf: "Download as PDF",
+      downloadAsPdfDescription: "Get your content in a professionally formatted PDF ready for sharing"
+    },
+    cta: {
+      readyToTransform: "Ready to Transform Your Educational Content?",
+      joinThousands: "Join thousands of educators who are already creating better learning materials with BrightMind",
+      createContentNow: "Create Content Now",
+      signUpForFree: "Sign Up For Free"
+    },
+    footer: {
+      footerDescription: "AI-powered educational content generation platform for educators and students",
+      quickLinks: "Quick Links",
+      home: "Home",
+      content: "Content",
+      myProfile: "My Profile",
+      contact: "Contact",
+      supportEmail: "support@brightmind.edu",
+      allRightsReserved: "All Rights Reserved"
+    },
+    contentPage: {
+      title: "Content Generation",
+      historyTitle: "Your History",
+      noHistory: "No content history found",
+      generateFirstContent: "Generate your first content below",
+      defaultDifficulty: "Default",
+      showLess: "Show less",
+      showAll: "Show all",
+      generateNewContent: "Generate New Content",
+      topicLabel: "Topic:",
+      topicPlaceholder: "Enter a topic to generate content about...",
+      difficultyLabel: "Difficulty Level:",
+      beginner: "Beginner",
+      intermediate: "Intermediate",
+      advanced: "Advanced",
+      generating: "Generating Content...",
+      generateButton: "Generate Content",
+      keyPoints: "Key Points",
+      quiz: "Quiz",
+      quizQuestions: "Quiz Questions",
+      answered: "Answered:",
+      of: "of",
+      correct: "Correct",
+      remainingQuestions: "Please answer all",
+      remainingQuestionsEnd: "remaining questions",
+      readyToSubmit: "Ready to submit your answers!",
+      submitQuiz: "Submit Quiz",
+      quizResults: "Quiz Results",
+      correctScore: "correct",
+      excellentFeedback: "Excellent work! You've mastered this topic!",
+      goodFeedback: "Good job! You have a solid understanding.",
+      improveFeedback: "Keep practicing to improve your knowledge.",
+      tryAgain: "Try Again",
+      reviewAnswers: "Review Answers",
+      generatedContent: "Generated Content:"
+    },
+    pdf: {
+      generatingPdf: "Generating PDF...",
+      downloadAsPdf: "Download as PDF",
+      authError: "Authentication required to generate PDF"
+    },
+    askAI: {
+      buttonLabel: "Ask AI",
+      placeholder: "Ask a question about this content...",
+      askButton: "Ask",
+      loading: "Thinking...",
+      errorMessage: "Something went wrong. Please try again.",
+      noContentError: "Generate content first to ask questions about it.",
+      closeButton: "Close",
+      askAgainButton: "Ask Another Question",
+      suggestions: "Suggested Questions",
+      suggestedQuestion1: "Summarize the key points",
+      suggestedQuestion2: "Explain this in simpler terms",
+      suggestedQuestion3: "Give me an example",
+      assistantTitle: "AI Assistant"
+    },
+    profile: {
+      title: "My Profile",
+      personalInfo: "Personal Information",
+      name: "Name",
+      email: "Email",
+      role: "Role",
+      joinedOn: "Joined on",
+      bio: "Bio",
+      editProfile: "Edit Profile",
+      saveChanges: "Save Changes",
+      cancel: "Cancel",
+      changePassword: "Change Password",
+      currentPassword: "Current Password",
+      newPassword: "New Password",
+      confirmPassword: "Confirm Password",
+      updatePassword: "Update Password",
+      accountSettings: "Account Settings",
+      language: "Language",
+      theme: "Theme",
+      darkTheme: "Dark Theme",
+      lightTheme: "Light Theme",
+      notifications: "Notifications",
+      enableNotifications: "Enable notifications",
+      contentHistory: "Content History",
+      viewAll: "View All",
+      deleteAccount: "Delete Account",
+      deleteAccountWarning: "This action cannot be undone. Once deleted, all your data will be permanently removed.",
+      confirmDelete: "Confirm Delete",
+      profileUpdated: "Profile successfully updated!",
+      passwordUpdated: "Password successfully updated!",
+      uploadPhoto: "Upload Photo",
+      removePhoto: "Remove Photo",
+      loginRequired: "Login Required",
+      loginToViewProfile: "Please log in to view your profile",
+      passwordsDoNotMatch: "Passwords do not match",
+      passwordTooShort: "Password must be at least 6 characters",
+      allFieldsRequired: "All fields are required",
+      userContent: "My Content",
+      generatedContent: "Generated Content",
+      noContentYet: "You haven't created any content yet",
+      createFirstContent: "Create your first content",
+      recentContent: "Recent Content",
+      viewAllContent: "View All Content",
+      contentDate: "Created on",
+      contentTopic: "Topic",
+      contentDifficulty: "Difficulty",
+      downloadContent: "Download",
+      deleteContent: "Delete",
+      editContent: "Edit",
+      contentDeleted: "Content successfully deleted",
+      confirmDeleteContent: "Are you sure you want to delete this content?",
+      goToContent: "View Content"
+    }
+  },
+  kannada: {
+    navbar: {
+      appName: "ಬ್ರೈಟ್‌ಮೈಂಡ್",
+      home: "ಮುಖಪುಟ",
+      content: "ವಿಷಯ",
+      about: "ನಮ್ಮ ಬಗ್ಗೆ",
+      profile: "ಪ್ರೊಫೈಲ್",
+      login: "ಲಾಗಿನ್"
+    },
+    hero: {
+      title: "AI-ಜನಿತ ಶೈಕ್ಷಣಿಕ ವಿಷಯದೊಂದಿಗೆ ಕಲಿಕೆಯನ್ನು ಪರಿವರ್ತಿಸಿ",
+      description: "ಸೆಕೆಂಡುಗಳಲ್ಲಿ ವೈಯಕ್ತಿಕ PDF ರಚನೆಯೊಂದಿಗೆ ಸಮಗ್ರ ಅಧ್ಯಯನ ಸಾಮಗ್ರಿಗಳನ್ನು ರಚಿಸಿ.",
+      getStarted: "ಪ್ರಾರಂಭಿಸಿ",
+      learnMore: "ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ",
+      contentGeneration: "ವಿಷಯವನ್ನು ರಚಿಸಿ",
+    },
+    features: {
+      keyFeatures: "ಪ್ರಮುಖ ವೈಶಿಷ್ಟ್ಯಗಳು",
+      discover: "ಶಿಕ್ಷಕರು ಆಕರ್ಷಕ ಮತ್ತು ವೃತ್ತಿಪರ ಕಲಿಕಾ ಸಾಮಗ್ರಿಗಳನ್ನು ರಚಿಸಲು BrightMind ಹೇಗೆ ಸಹಾಯ ಮಾಡುತ್ತದೆ ಎಂಬುದನ್ನು ಅನ್ವೇಷಿಸಿ",
+      pdfGeneration: "PDF ರಚನೆ",
+      pdfGenerationDescription: "ನಿಮ್ಮ ವಿಷಯವನ್ನು ಒಂದೇ ಕ್ಲಿಕ್‌ನಲ್ಲಿ ಸುಂದರವಾಗಿ ಫಾರ್ಮ್ಯಾಟ್ ಮಾಡಿದ PDF ಡಾಕ್ಯುಮೆಂಟ್‌ಗಳಾಗಿ ಪರಿವರ್ತಿಸಿ",
+      customLessonPlans: "ಕಸ್ಟಮ್ ಪಾಠ ಯೋಜನೆಗಳು",
+      customLessonPlansDescription: "ನಿರ್ದಿಷ್ಟ ಕಲಿಕಾ ಉದ್ದೇಶಗಳಿಗೆ ಅನುಗುಣವಾಗಿ ವೈಯಕ್ತಿಕಗೊಳಿಸಿದ ಪಾಠ ಯೋಜನೆಗಳನ್ನು ರಚಿಸಿ",
+      aiPoweredContent: "AI-ಪವರ್ಡ್ ವಿಷಯ",
+      aiPoweredContentDescription: "ಉನ್ನತ ಗುಣಮಟ್ಟದ ಶೈಕ್ಷಣಿಕ ಸಾಮಗ್ರಿಗಳನ್ನು ರಚಿಸಲು ಅಡ್ವಾನ್ಸ್ಡ್ AI ಬಳಸಿ",
+      collaborativeLearning: "ಸಹಯೋಗಿ ಕಲಿಕೆ",
+      collaborativeLearningDescription: "ಸಹೋದ್ಯೋಗಿಗಳು ಮತ್ತು ವಿದ್ಯಾರ್ಥಿಗಳೊಂದಿಗೆ ವಿಷಯವನ್ನು ಹಂಚಿಕೊಳ್ಳಿ ಮತ್ತು ಸಹಯೋಗ ಮಾಡಿ",
+      assessmentTools: "ಮೌಲ್ಯಮಾಪನ ಉಪಕರಣಗಳು",
+      assessmentToolsDescription: "ನಿಮ್ಮ ವಿದ್ಯಾರ್ಥಿಗಳಿಗಾಗಿ ಕ್ವಿಜ್‌ಗಳು, ಪರೀಕ್ಷೆಗಳು ಮತ್ತು ಮೌಲ್ಯಮಾಪನಗಳನ್ನು ರಚಿಸಿ",
+      customizableTemplates: "ಕಸ್ಟಮೈಸ್ ಮಾಡಬಹುದಾದ ಟೆಂಪ್ಲೇಟ್‌ಗಳು",
+      customizableTemplatesDescription: "ನಿಮ್ಮ ಬೋಧನಾ ಶೈಲಿಗೆ ಹೊಂದಿಕೆಯಾಗುವಂತೆ ವಿವಿಧ ಟೆಂಪ್ಲೇಟ್‌ಗಳಿಂದ ಆಯ್ಕೆ ಮಾಡಿ"
+    },
+    demo: {
+      oneClickPdfGeneration: "ಒಂದು-ಕ್ಲಿಕ್ PDF ರಚನೆ",
+      oneClickPdfGenerationDescription: "ನಿಮ್ಮ ವಿಷಯವನ್ನು ತಕ್ಷಣವೇ ವೃತ್ತಿಪರವಾಗಿ ಫಾರ್ಮ್ಯಾಟ್ ಮಾಡಿದ PDF ಡಾಕ್ಯುಮೆಂಟ್‌ಗಳಾಗಿ ಪರಿವರ್ತಿಸಿ",
+      professionallyFormattedDocuments: "ವೃತ್ತಿಪರವಾಗಿ ಫಾರ್ಮ್ಯಾಟ್ ಮಾಡಿದ ಡಾಕ್ಯುಮೆಂಟ್‌ಗಳು",
+      instantDownloads: "ತಕ್ಷಣದ ಡೌನ್‌ಲೋಡ್‌ಗಳು",
+      customizableStylingOptions: "ಕಸ್ಟಮೈಸ್ ಮಾಡಬಹುದಾದ ಶೈಲಿ ಆಯ್ಕೆಗಳು",
+      tryItNow: "ಈಗ ಪ್ರಯತ್ನಿಸಿ",
+      quantumPhysicsLesson: "ಕ್ವಾಂಟಮ್ ಭೌತಶಾಸ್ತ್ರ ಪಾಠ",
+      quantumPhysicsLessonDescription: "ಹೈಸ್ಕೂಲ್ ಭೌತಶಾಸ್ತ್ರಕ್ಕಾಗಿ ಕ್ವಾಂಟಮ್ ಮೆಕ್ಯಾನಿಕ್ಸ್ ತತ್ವಗಳ ಕುರಿತು ಸುಧಾರಿತ ಪಾಠ",
+      advanced: "ಸುಧಾರಿತ",
+      downloadAsPdf: "PDF ಆಗಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ"
+    },
+    howItWorks: {
+      howItWorks: "ಇದು ಹೇಗೆ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತದೆ",
+      chooseYourTopic: "ನಿಮ್ಮ ವಿಷಯವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+      chooseYourTopicDescription: "ವಿಶಾಲ ಶ್ರೇಣಿಯ ವಿಷಯಗಳಿಂದ ಆಯ್ಕೆ ಮಾಡಿ ಅಥವಾ ನಿಮ್ಮ ಸ್ವಂತ ಕಸ್ಟಮ್ ವಿಷಯವನ್ನು ರಚಿಸಿ",
+      customizeOptions: "ಆಯ್ಕೆಗಳನ್ನು ಕಸ್ಟಮೈಸ್ ಮಾಡಿ",
+      customizeOptionsDescription: "ನಿಮ್ಮ ಬೋಧನಾ ಅಗತ್ಯಗಳಿಗೆ ಹೊಂದಿಕೆಯಾಗುವಂತೆ ಕಠಿಣತೆಯ ಮಟ್ಟ, ಉದ್ದ ಮತ್ತು ಸ್ವರೂಪವನ್ನು ಹೊಂದಿಸಿ",
+      generateContent: "ವಿಷಯವನ್ನು ರಚಿಸಿ",
+      generateContentDescription: "ನಮ್ಮ AI ಸೆಕೆಂಡುಗಳಲ್ಲಿ ಸಮಗ್ರ, ಆಕರ್ಷಕ ಶೈಕ್ಷಣಿಕ ವಿಷಯವನ್ನು ರಚಿಸುತ್ತದೆ",
+      downloadAsPdf: "PDF ಆಗಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ",
+      downloadAsPdfDescription: "ಹಂಚಿಕೊಳ್ಳಲು ಸಿದ್ಧವಾಗಿರುವ ಪ್ರೊಫೆಶನಲ್ ಫಾರ್ಮ್ಯಾಟ್ ಮಾಡಿದ PDF ನಲ್ಲಿ ನಿಮ್ಮ ವಿಷಯವನ್ನು ಪಡೆಯಿರಿ"
+    },
+    cta: {
+      readyToTransform: "ನಿಮ್ಮ ಶೈಕ್ಷಣಿಕ ವಿಷಯವನ್ನು ಪರಿವರ್ತಿಸಲು ಸಿದ್ಧವಾಗಿದ್ದೀರಾ?",
+      joinThousands: "BrightMind ನೊಂದಿಗೆ ಈಗಾಗಲೇ ಉತ್ತಮ ಕಲಿಕಾ ಸಾಮಗ್ರಿಗಳನ್ನು ರಚಿಸುತ್ತಿರುವ ಸಾವಿರಾರು ಶಿಕ್ಷಕರೊಂದಿಗೆ ಸೇರಿ",
+      createContentNow: "ಈಗ ವಿಷಯವನ್ನು ರಚಿಸಿ",
+      signUpForFree: "ಉಚಿತವಾಗಿ ಸೈನ್ ಅಪ್ ಮಾಡಿ"
+    },
+    footer: {
+      footerDescription: "ಶಿಕ್ಷಕರು ಮತ್ತು ವಿದ್ಯಾರ್ಥಿಗಳಿಗಾಗಿ AI-ಪವರ್ಡ್ ಶೈಕ್ಷಣಿಕ ವಿಷಯ ರಚನಾ ಪ್ಲಾಟ್‌ಫಾರ್ಮ್",
+      quickLinks: "ತ್ವರಿತ ಲಿಂಕ್‌ಗಳು",
+      home: "ಮುಖಪುಟ",
+      content: "ವಿಷಯ",
+      myProfile: "ನನ್ನ ಪ್ರೊಫೈಲ್",
+      contact: "ಸಂಪರ್ಕ",
+      supportEmail: "support@brightmind.edu",
+      allRightsReserved: "ಎಲ್ಲ ಹಕ್ಕುಗಳನ್ನು ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ"
+    },
+    contentPage: {
+      title: "ವಿಷಯ ರಚನೆ",
+      historyTitle: "ನಿಮ್ಮ ಇತಿಹಾಸ",
+      noHistory: "ಯಾವುದೇ ವಿಷಯ ಇತಿಹಾಸ ಕಂಡುಬಂದಿಲ್ಲ",
+      generateFirstContent: "ಕೆಳಗೆ ನಿಮ್ಮ ಮೊದಲ ವಿಷಯವನ್ನು ರಚಿಸಿ",
+      defaultDifficulty: "ಡೀಫಾಲ್ಟ್",
+      showLess: "ಕಡಿಮೆ ತೋರಿಸಿ",
+      showAll: "ಎಲ್ಲಾ ತೋರಿಸಿ",
+      generateNewContent: "ಹೊಸ ವಿಷಯವನ್ನು ರಚಿಸಿ",
+      topicLabel: "ವಿಷಯ:",
+      topicPlaceholder: "ವಿಷಯದ ಬಗ್ಗೆ ವಿಷಯವನ್ನು ರಚಿಸಲು ನಮೂದಿಸಿ...",
+      difficultyLabel: "ಕಠಿಣತೆಯ ಮಟ್ಟ:",
+      beginner: "ಪ್ರಾರಂಭಿಕ",
+      intermediate: "ಮಧ್ಯಮ",
+      advanced: "ಉನ್ನತ",
+      generating: "ವಿಷಯವನ್ನು ರಚಲಾಗುತ್ತಿದೆ...",
+      generateButton: "ವಿಷಯವನ್ನು ರಚಿಸಿ",
+      keyPoints: "ಪ್ರಮುಖ ಅಂಶಗಳು",
+      quiz: "ಪ್ರಶ್ನೋತ್ತರ",
+      quizQuestions: "ಪ್ರಶ್ನೋತ್ತರ ಪ್ರಶ್ನೆಗಳು",
+      answered: "ಉತ್ತರಿಸಿದ್ದು:",
+      of: "ರಲ್ಲಿ",
+      correct: "ಸರಿಯಾಗಿದೆ",
+      remainingQuestions: "ದಯವಿಟ್ಟು ಎಲ್ಲಾ",
+      remainingQuestionsEnd: "ಬಾಕಿ ಉಳಿದಿರುವ ಪ್ರಶ್ನೆಗಳಿಗೆ ಉತ್ತರಿಸಿ",
+      readyToSubmit: "ನಿಮ್ಮ ಉತ್ತರಗಳನ್ನು ಸಲ್ಲಿಸಲು ಸಿದ್ಧವಾಗಿದೆ!",
+      submitQuiz: "ಪ್ರಶ್ನೋತ್ತರ ಸಲ್ಲಿಸಿ",
+      quizResults: "ಪ್ರಶ್ನೋತ್ತರ ಫಲಿತಾಂಶಗಳು",
+      correctScore: "ಸರಿಯಾಗಿದೆ",
+      excellentFeedback: "ಅದ್ಭುತ ಕೆಲಸ! ನೀವು ಈ ವಿಷಯವನ್ನು ಮಾಸ್ಟರ್ ಮಾಡಿದ್ದೀರಿ!",
+      goodFeedback: "ಒಳ್ಳೆಯ ಕೆಲಸ! ನಿಮಗೆ ಗಟ್ಟಿಯಾದ ತಿಳುವಳಿಕೆ ಇದೆ.",
+      improveFeedback: "ನಿಮ್ಮ ಜ್ಞಾನವನ್ನು ಸುಧಾರಿಸಲು ಅಭ್ಯಾಸ ಮಾಡುತ್ತಿರಿ.",
+      tryAgain: "ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ",
+      reviewAnswers: "ಉತ್ತರಗಳನ್ನು ಪರಿಶೀಲಿಸಿ",
+      generatedContent: "ರಚಿಸಲಾದ ವಿಷಯ:"
+    },
+    pdf: {
+      generatingPdf: "PDF ಅನ್ನು ರಚಲಾಗುತ್ತಿದೆ...",
+      downloadAsPdf: "PDF ಆಗಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ",
+      authError: "PDF ರಚಿಸಲು ದೃಢೀಕರಣ ಅಗತ್ಯವಿದೆ"
+    },
+    askAI: {
+      buttonLabel: "AI ಕೇಳಿ",
+      placeholder: "ಈ ವಿಷಯದ ಬಗ್ಗೆ ಪ್ರಶ್ನೆಯನ್ನು ಕೇಳಿ...",
+      askButton: "ಕೇಳಿ",
+      loading: "ಯೋಚಿಸುತ್ತಿದೆ...",
+      errorMessage: "ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+      noContentError: "ಪ್ರಶ್ನೆಗಳನ್ನು ಕೇಳಲು ಮೊದಲು ವಿಷಯವನ್ನು ರಚಿಸಿ.",
+      closeButton: "ಮುಚ್ಚಿ",
+      askAgainButton: "ಮತ್ತೊಂದು ಪ್ರಶ್ನೆಯನ್ನು ಕೇಳಿ",
+      suggestions: "ಸೂಚಿಸಿದ ಪ್ರಶ್ನೆಗಳು",
+      suggestedQuestion1: "ಪ್ರಮುಖ ಅಂಶಗಳನ್ನು ಸಾರಾಂಶಗೊಳಿಸಿ",
+      suggestedQuestion2: "ಇದನ್ನು ಸರಳ ರೀತಿಯಲ್ಲಿ ವಿವರಿಸಿ",
+      suggestedQuestion3: "ನನಗೆ ಒಂದು ಉದಾಹರಣೆ ನೀಡಿ",
+      assistantTitle: "AI ಸಹಾಯಕ"
+    },
+    profile: {
+      title: "ನನ್ನ ಪ್ರೊಫೈಲ್",
+      personalInfo: "ವೈಯಕ್ತಿಕ ಮಾಹಿತಿ",
+      name: "ಹೆಸರು",
+      email: "ಇಮೇಲ್",
+      role: "ಪಾತ್ರ",
+      joinedOn: "ಸೇರಿದ ದಿನಾಂಕ",
+      bio: "ಜೀವನ ಚರಿತ್ರೆ",
+      editProfile: "ಪ್ರೊಫೈಲ್ ಸಂಪಾದಿಸಿ",
+      saveChanges: "ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಿ",
+      cancel: "ರದ್ದುಮಾಡಿ",
+      changePassword: "ಪಾಸ್‌ವರ್ಡ್ ಬದಲಾಯಿಸಿ",
+      currentPassword: "ಪ್ರಸ್ತುತ ಪಾಸ್‌ವರ್ಡ್",
+      newPassword: "ಹೊಸ ಪಾಸ್‌ವರ್ಡ್",
+      confirmPassword: "ಪಾಸ್‌ವರ್ಡ್ ದೃಢೀಕರಿಸಿ",
+      updatePassword: "ಪಾಸ್‌ವರ್ಡ್ ನವೀಕರಿಸಿ",
+      accountSettings: "ಖಾತೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
+      language: "ಭಾಷೆ",
+      theme: "ಥೀಮ್",
+      darkTheme: "ಡಾರ್ಕ್ ಥೀಮ್",
+      lightTheme: "ಲೈಟ್ ಥೀಮ್",
+      notifications: "ಅಧಿಸೂಚನೆಗಳು",
+      enableNotifications: "ಅಧಿಸೂಚನೆಗಳನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ",
+      contentHistory: "ವಿಷಯ ಇತಿಹಾಸ",
+      viewAll: "ಎಲ್ಲವನ್ನೂ ವೀಕ್ಷಿಸಿ",
+      deleteAccount: "ಖಾತೆಯನ್ನು ಅಳಿಸಿ",
+      deleteAccountWarning: "ಈ ಕ್ರಿಯೆಯನ್ನು ರದ್ದುಗೊಳಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ಒಮ್ಮೆ ಅಳಿಸಿದ ನಂತರ, ನಿಮ್ಮ ಎಲ್ಲಾ ಡೇಟಾವನ್ನು ಶಾಶ್ವತವಾಗಿ ತೆಗೆದುಹಾಕಲಾಗುತ್ತದೆ.",
+      confirmDelete: "ಅಳಿಸುವಿಕೆಯನ್ನು ದೃಢೀಕರಿಸಿ",
+      profileUpdated: "ಪ್ರೊಫೈಲ್ ಯಶಸ್ವಿಯಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ!",
+      passwordUpdated: "ಪಾಸ್‌ವರ್ಡ್ ಯಶಸ್ವಿಯಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ!",
+      uploadPhoto: "ಫೋಟೋ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ",
+      removePhoto: "ಫೋಟೋ ತೆಗೆದುಹಾಕಿ",
+      loginRequired: "ಲಾಗಿನ್ ಅಗತ್ಯವಿದೆ",
+      loginToViewProfile: "ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ವೀಕ್ಷಿಸಲು ದಯವಿಟ್ಟು ಲಾಗಿನ್ ಮಾಡಿ",
+      passwordsDoNotMatch: "ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಹೊಂದಿಕೆಯಾಗುವುದಿಲ್ಲ",
+      passwordTooShort: "ಪಾಸ್‌ವರ್ಡ್ ಕನಿಷ್ಠ 6 ಅಕ್ಷರಗಳನ್ನು ಹೊಂದಿರಬೇಕು",
+      allFieldsRequired: "ಎಲ್ಲಾ ಕ್ಷೇತ್ರಗಳು ಅಗತ್ಯವಿದೆ",
+      userContent: "ನನ್ನ ವಿಷಯ",
+      generatedContent: "ರಚಿಸಿದ ವಿಷಯ",
+      noContentYet: "ನೀವು ಇನ್ನೂ ಯಾವುದೇ ವಿಷಯವನ್ನು ರಚಿಸಿಲ್ಲ",
+      createFirstContent: "ನಿಮ್ಮ ಮೊದಲ ವಿಷಯವನ್ನು ರಚಿಸಿ",
+      recentContent: "ಇತ್ತೀಚಿನ ವಿಷಯ",
+      viewAllContent: "ಎಲ್ಲಾ ವಿಷಯವನ್ನು ವೀಕ್ಷಿಸಿ",
+      contentDate: "ರಚಿಸಿದ ದಿನಾಂಕ",
+      contentTopic: "ವಿಷಯ",
+      contentDifficulty: "ಕಠಿಣತೆ",
+      downloadContent: "ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ",
+      deleteContent: "ಅಳಿಸಿ",
+      editContent: "ಸಂಪಾದಿಸಿ",
+      contentDeleted: "ವಿಷಯವನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಅಳಿಸಲಾಗಿದೆ",
+      confirmDeleteContent: "ನೀವು ಖಚಿತವಾಗಿ ಈ ವಿಷಯವನ್ನು ಅಳಿಸಲು ಬಯಸುವಿರಾ?",
+      goToContent: "ವಿಷಯವನ್ನು ವೀಕ್ಷಿಸಿ"
+    }
+  },
+  hindi: {
+    navbar: {
+      appName: "ब्राइटमाइंड",
+      home: "होम",
+      content: "सामग्री",
+      about: "हमारे बारे में",
+      profile: "प्रोफाइल",
+      login: "लॉगिन"
+    },
+    hero: {
+      title: "AI-जनित शैक्षिक सामग्री के साथ सीखने को बदलें",
+      description: "सेकंडों में वैयक्तिकृत PDF जनरेशन के साथ व्यापक अध्ययन सामग्री बनाएं।",
+      getStarted: "शुरू करें",
+      learnMore: "और जानें",
+      contentGeneration: "सामग्री बनाएं",
+    },
+    features: {
+      keyFeatures: "मुख्य विशेषताएँ",
+      discover: "जानें कि BrightMind शिक्षकों को आकर्षक और पेशेवर शिक्षण सामग्री बनाने में कैसे मदद करता है",
+      pdfGeneration: "PDF जनरेशन",
+      pdfGenerationDescription: "अपनी सामग्री को एक क्लिक में सुंदर फॉर्मेटेड PDF दस्तावेजों में बदलें",
+      customLessonPlans: "कस्टम पाठ योजनाएँ",
+      customLessonPlansDescription: "विशिष्ट सीखने के उद्देश्यों के अनुरूप व्यक्तिगत पाठ योजनाएँ बनाएँ",
+      aiPoweredContent: "AI-संचालित सामग्री",
+      aiPoweredContentDescription: "उच्च गुणवत्ता वाली शैक्षिक सामग्री बनाने के लिए उन्नत AI का लाभ उठाएँ",
+      collaborativeLearning: "सहयोगात्मक सीखना",
+      collaborativeLearningDescription: "सहकर्मियों और छात्रों के साथ सामग्री साझा करें और सहयोग करें",
+      assessmentTools: "मूल्यांकन उपकरण",
+      assessmentToolsDescription: "अपने छात्रों के लिए क्विज़, परीक्षण और मूल्यांकन बनाएँ",
+      customizableTemplates: "अनुकूलन योग्य टेम्पलेट्स",
+      customizableTemplatesDescription: "अपनी शिक्षण शैली के अनुरूप विभिन्न टेम्पलेट्स से चुनें"
+    },
+    demo: {
+      oneClickPdfGeneration: "वन-क्लिक PDF जनरेशन",
+      oneClickPdfGenerationDescription: "अपनी सामग्री को तुरंत पेशेवर रूप से फॉर्मेटेड PDF दस्तावेजों में बदलें",
+      professionallyFormattedDocuments: "पेशेवर रूप से फॉर्मेटेड दस्तावेज़",
+      instantDownloads: "तत्काल डाउनलोड",
+      customizableStylingOptions: "अनुकूलन योग्य स्टाइलिंग विकल्प",
+      tryItNow: "अभी आज़माएं",
+      quantumPhysicsLesson: "क्वांटम भौतिकी पाठ",
+      quantumPhysicsLessonDescription: "हाई स्कूल भौतिकी के लिए क्वांटम मैकेनिक्स सिद्धांतों पर एक उन्नत पाठ",
+      advanced: "उन्नत",
+      downloadAsPdf: "PDF के रूप में डाउनलोड करें"
+    },
+    howItWorks: {
+      howItWorks: "यह कैसे काम करता है",
+      chooseYourTopic: "अपना विषय चुनें",
+      chooseYourTopicDescription: "विषयों की विस्तृत श्रृंखला से चुनें या अपना स्वयं का कस्टम विषय बनाएं",
+      customizeOptions: "विकल्प अनुकूलित करें",
+      customizeOptionsDescription: "अपनी शिक्षण आवश्यकताओं के अनुरूप कठिनाई स्तर, लंबाई और प्रारूप समायोजित करें",
+      generateContent: "सामग्री उत्पन्न करें",
+      generateContentDescription: "हमारा AI सेकंडों में व्यापक, आकर्षक शैक्षिक सामग्री बनाता है",
+      downloadAsPdf: "PDF के रूप में डाउनलोड करें",
+      downloadAsPdfDescription: "अपनी सामग्री को साझा करने के लिए तैयार पेशेवर रूप से फॉर्मेटेड PDF में प्राप्त करें"
+    },
+    cta: {
+      readyToTransform: "अपनी शैक्षिक सामग्री को बदलने के लिए तैयार हैं?",
+      joinThousands: "हजारों शिक्षकों से जुड़ें जो पहले से ही BrightMind के साथ बेहतर शिक्षण सामग्री बना रहे हैं",
+      createContentNow: "अभी सामग्री बनाएं",
+      signUpForFree: "मुफ्त में साइन अप करें"
+    },
+    footer: {
+      footerDescription: "शिक्षकों और छात्रों के लिए AI-संचालित शैक्षिक सामग्री निर्माण प्लेटफॉर्म",
+      quickLinks: "त्वरित लिंक",
+      home: "होम",
+      content: "सामग्री",
+      myProfile: "मेरी प्रोफाइल",
+      contact: "संपर्क",
+      supportEmail: "support@brightmind.edu",
+      allRightsReserved: "सर्वाधिकार सुरक्षित"
+    },
+    contentPage: {
+      title: "सामग्री निर्माण",
+      historyTitle: "आपका इतिहास",
+      noHistory: "कोई सामग्री इतिहास नहीं मिला",
+      generateFirstContent: "नीचे अपनी पहली सामग्री बनाएं",
+      defaultDifficulty: "डिफ़ॉल्ट",
+      showLess: "कम दिखाएं",
+      showAll: "सभी दिखाएं",
+      generateNewContent: "नई सामग्री बनाएं",
+      topicLabel: "विषय:",
+      topicPlaceholder: "सामग्री बनाने के लिए एक विषय दर्ज करें...",
+      difficultyLabel: "कठिनाई स्तर:",
+      beginner: "शुरुआती",
+      intermediate: "मध्यवर्ती",
+      advanced: "उन्नत",
+      generating: "सामग्री बनाई जा रही है...",
+      generateButton: "सामग्री बनाएं",
+      keyPoints: "मुख्य बातें",
+      quiz: "प्रश्नोत्तरी",
+      quizQuestions: "प्रश्नोत्तरी के प्रश्न",
+      answered: "उत्तर दिए:",
+      of: "में से",
+      correct: "सही",
+      remainingQuestions: "कृपया सभी",
+      remainingQuestionsEnd: "शेष प्रश्नों के उत्तर दें",
+      readyToSubmit: "अपने उत्तर जमा करने के लिए तैयार!",
+      submitQuiz: "प्रश्नोत्तरी जमा करें",
+      quizResults: "प्रश्नोत्तरी परिणाम",
+      correctScore: "सही",
+      excellentFeedback: "उत्कृष्ट कार्य! आपने इस विषय पर महारत हासिल कर ली है!",
+      goodFeedback: "अच्छा काम! आपकी समझ मजबूत है।",
+      improveFeedback: "अपने ज्ञान को बेहतर बनाने के लिए अभ्यास करते रहें।",
+      tryAgain: "पुनः प्रयास करें",
+      reviewAnswers: "उत्तर देखें",
+      generatedContent: "उत्पन्न सामग्री:"
+    },
+    pdf: {
+      generatingPdf: "PDF बनाई जा रही है...",
+      downloadAsPdf: "PDF के रूप में डाउनलोड करें",
+      authError: "PDF बनाने के लिए प्रमाणीकरण आवश्यक है"
+    },
+    askAI: {
+      buttonLabel: "AI से पूछें",
+      placeholder: "इस सामग्री के बारे में एक प्रश्न पूछें...",
+      askButton: "पूछें",
+      loading: "सोच रहा है...",
+      errorMessage: "कुछ गलत हो गया। कृपया पुनः प्रयास करें।",
+      noContentError: "प्रश्न पूछने के लिए पहले सामग्री बनाएं।",
+      closeButton: "बंद करें",
+      askAgainButton: "एक और प्रश्न पूछें",
+      suggestions: "सुझाए गए प्रश्न",
+      suggestedQuestion1: "मुख्य बिंदुओं को संक्षेप में बताएं",
+      suggestedQuestion2: "इसे सरल शब्दों में समझाएं",
+      suggestedQuestion3: "मुझे एक उदाहरण दें",
+      assistantTitle: "AI सहायक"
+    },
+    profile: {
+      title: "मेरी प्रोफाइल",
+      personalInfo: "व्यक्तिगत जानकारी",
+      name: "नाम",
+      email: "ईमेल",
+      role: "भूमिका",
+      joinedOn: "शामिल होने की तारीख",
+      bio: "परिचय",
+      editProfile: "प्रोफाइल संपादित करें",
+      saveChanges: "परिवर्तन सहेजें",
+      cancel: "रद्द करें",
+      changePassword: "पासवर्ड बदलें",
+      currentPassword: "वर्तमान पासवर्ड",
+      newPassword: "नया पासवर्ड",
+      confirmPassword: "पासवर्ड की पुष्टि करें",
+      updatePassword: "पासवर्ड अपडेट करें",
+      accountSettings: "खाता सेटिंग्स",
+      language: "भाषा",
+      theme: "थीम",
+      darkTheme: "डार्क थीम",
+      lightTheme: "लाइट थीम",
+      notifications: "सूचनाएं",
+      enableNotifications: "सूचनाएं सक्षम करें",
+      contentHistory: "सामग्री इतिहास",
+      viewAll: "सभी देखें",
+      deleteAccount: "खाता हटाएं",
+      deleteAccountWarning: "यह क्रिया पूर्ववत नहीं की जा सकती। एक बार हटाए जाने के बाद, आपका सभी डेटा स्थायी रूप से हटा दिया जाएगा।",
+      confirmDelete: "हटाने की पुष्टि करें",
+      profileUpdated: "प्रोफाइल सफलतापूर्वक अपडेट की गई!",
+      passwordUpdated: "पासवर्ड सफलतापूर्वक अपडेट किया गया!",
+      uploadPhoto: "फोटो अपलोड करें",
+      removePhoto: "फोटो हटाएं",
+      loginRequired: "लॉगिन आवश्यक है",
+      loginToViewProfile: "अपनी प्रोफ़ाइल देखने के लिए कृपया लॉग इन करें",
+      passwordsDoNotMatch: "पासवर्ड मेल नहीं खाते",
+      passwordTooShort: "पासवर्ड कम से कम 6 अक्षरों का होना चाहिए",
+      allFieldsRequired: "सभी फ़ील्ड आवश्यक हैं",
+      userContent: "मेरी सामग्री",
+      generatedContent: "उत्पन्न सामग्री",
+      noContentYet: "आपने अभी तक कोई सामग्री नहीं बनाई है",
+      createFirstContent: "अपनी पहली सामग्री बनाएं",
+      recentContent: "हाल की सामग्री",
+      viewAllContent: "सभी सामग्री देखें",
+      contentDate: "बनाने की तिथि",
+      contentTopic: "विषय",
+      contentDifficulty: "कठिनाई",
+      downloadContent: "डाउनलोड करें",
+      deleteContent: "हटाएं",
+      editContent: "संपादित करें",
+      contentDeleted: "सामग्री सफलतापूर्वक हटा दी गई",
+      confirmDeleteContent: "क्या आप वाकई इस सामग्री को हटाना चाहते हैं?",
+      goToContent: "सामग्री देखें"
+    }
+  }
+};
+
+export function LanguageProvider({ children }: { children: ReactNode }) {
+  const [language, setLanguage] = useState('english');
+
+  // Update HTML attribute when language changes
+  useEffect(() => {
+    document.documentElement.setAttribute('data-language', language);
+  }, [language]);
+
+  const translate = (key: string, section: string) => {
+    try {
+      //@ts-ignore - We'll handle missing translations gracefully
+      return translations[language][section][key] || key;
+    } catch (error) {
+      return key; // Return the original key if translation is missing
+    }
+  };
+
+  return (
+    <LanguageContext.Provider value={{ language, setLanguage, translate }}>
+      {children}
+    </LanguageContext.Provider>
+  );
+}
+
+export function useLanguage() {
+  const context = useContext(LanguageContext);
+  if (context === undefined) {
+    throw new Error('useLanguage must be used within a LanguageProvider');
+  }
+  return context;
+}
