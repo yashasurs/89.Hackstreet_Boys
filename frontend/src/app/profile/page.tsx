@@ -107,6 +107,7 @@ export default function ProfilePage() {
         throw new Error('Failed to update profile')
       }
       
+      
       const updatedData = await response.json()
       
       // Update local state with server response
