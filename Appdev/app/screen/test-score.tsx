@@ -12,30 +12,34 @@ interface Question {
   option_b: string;
   option_c: string;
   option_d: string;
-  answer: string;
+  answer_option: string;
+  answer_string: string;
 }
 
 const TestScore = () => {
-  const { score, selectedAnswers, questions } = useLocalSearchParams(); // Retrieve parameters
+  const { selectedAnswers, questions } = useLocalSearchParams();
 
-  // Ensure parameters are strings
-  const parsedScore = Array.isArray(score) ? score[0] : score;
-  const parsedSelectedAnswers = JSON.parse(Array.isArray(selectedAnswers) ? selectedAnswers[0] : selectedAnswers || "{}");
-  const parsedQuestions: Question[] = JSON.parse(Array.isArray(questions) ? questions[0] : questions || "[]");
+  const parsedSelectedAnswers: { [key: number]: string } = (() => {
+    try {
+      return JSON.parse(Array.isArray(selectedAnswers) ? selectedAnswers[0] : selectedAnswers || "{}");
+    } catch {
+      return {};
+    }
+  })();
 
-  // Find wrong answers
+  const parsedQuestions: Question[] = (() => {
+    try {
+      return JSON.parse(Array.isArray(questions) ? questions[0] : questions || "[]");
+    } catch {
+      return [];
+    }
+  })();
+
   const wrongAnswers = parsedQuestions.filter((q, index) => {
-    const selectedAnswer = parsedSelectedAnswers[index]?.trim().toLowerCase(); // Normalize selected answer
-    const correctAnswer = q.answer.trim().toLowerCase(); // Normalize correct answer
-
-    console.log("Question:", q.question);
-    console.log("Correct Answer:", correctAnswer);
-    console.log("Selected Answer:", selectedAnswer);
-
-    return selectedAnswer !== correctAnswer; // Compare normalized answers
+    const selectedAnswer = parsedSelectedAnswers[index];
+    return selectedAnswer !== q.answer_string; // Compare directly with answer_string
   });
 
-  // Calculate the score
   const correctAnswersCount = parsedQuestions.length - wrongAnswers.length;
 
   return (
@@ -49,7 +53,7 @@ const TestScore = () => {
           {wrongAnswers.map((q, index) => (
             <View key={index} style={styles.wrongAnswerContainer}>
               <Text style={styles.question}>{index + 1}. {q.question}</Text>
-              <Text style={styles.correctAnswer}>Correct Answer: {q.answer}</Text>
+              <Text style={styles.correctAnswer}>Correct Answer: {q.answer_string}</Text>
               <Text style={styles.selectedAnswer}>
                 Your Answer: {parsedSelectedAnswers[index] || "Not Answered"}
               </Text>

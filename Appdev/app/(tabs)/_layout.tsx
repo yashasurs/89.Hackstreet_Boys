@@ -79,12 +79,12 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
-        name="save"
+        name="doubts"
         options={{
-          title: "Save",
+          title: "doubts",
           headerShown: false,
           tabBarIcon: ({ focused }: { focused: boolean }) => (
-            <TabIcon focused={focused} icon={icons.save} title="Save" />
+            <TabIcon focused={focused} icon={icons.save} title="Doubts" />
           ),
         }}
       />

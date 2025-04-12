@@ -1,28 +1,16 @@
-import { Stack } from "expo-router";
+import { Stack, Slot } from "expo-router";
 import "./globals.css";
 import { StatusBar } from "react-native";
+import { AuthProvider } from "./contexts/AuthContext";
 
 export default function RootLayout() {
   return (
-    <>
+    <AuthProvider>
       {/* Hide the status bar */}
       <StatusBar hidden={true} />
 
-      {/* Stack navigator with header disabled globally */}
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen
-          name="(tabs)"
-          options={{
-            headerShown: false, // Ensure tabs also have no header
-          }}
-        />
-        <Stack.Screen
-          name="screen"
-          options={{
-            headerShown: false, // Ensure tabs also have no header
-          }}
-        />
-      </Stack>
-    </>
+      {/* Use a Slot for the root navigator for better navigation stability */}
+      <Slot />
+    </AuthProvider>
   );
 }
