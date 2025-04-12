@@ -68,7 +68,7 @@ export default function Index() {
           <View style={styles.heroButtons}>
             <TouchableOpacity
               style={styles.primaryButton}
-              onPress={() => router.push("../generate-content")}
+              onPress={() => router.push("./search")}
             >
               <Text style={styles.primaryButtonText}>Generate Content</Text>
             </TouchableOpacity>
