@@ -6,10 +6,16 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 interface AskAIButtonProps {
   currentContent: string;
+  generatedContent?: string; // New prop for pre-generated content
+  autoSubmit?: boolean; // Option to automatically submit the generated content
 }
 
-const AskAIButton: React.FC<AskAIButtonProps> = ({ currentContent }) => {
-  const { isAuthenticated } = useAuth();
+const AskAIButton: React.FC<AskAIButtonProps> = ({ 
+  currentContent, 
+  generatedContent,
+  autoSubmit = false 
+}) => {
+  const { isAuthenticated, token } = useAuth();
   const { translate } = useLanguage();
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [question, setQuestion] = useState('');
@@ -17,6 +23,24 @@ const AskAIButton: React.FC<AskAIButtonProps> = ({ currentContent }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const panelRef = useRef<HTMLDivElement>(null);
+
+  // Handle generated content when provided
+  useEffect(() => {
+    if (generatedContent) {
+      setQuestion(generatedContent);
+      
+      // Auto open panel when content is provided
+      setIsPanelOpen(true);
+      
+      // Auto submit if requested
+      if (autoSubmit) {
+        const submitFn = async () => {
+          await handleSubmitInternal(generatedContent);
+        };
+        submitFn();
+      }
+    }
+  }, [generatedContent, autoSubmit]);
 
   // Handle click outside to close panel
   useEffect(() => {
@@ -48,10 +72,9 @@ const AskAIButton: React.FC<AskAIButtonProps> = ({ currentContent }) => {
     setError('');
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!question.trim()) return;
+  // Internal function to handle submission
+  const handleSubmitInternal = async (questionToSubmit: string) => {
+    if (!questionToSubmit.trim()) return;
     if (!currentContent) {
       setError(translate('noContentError', 'askAI'));
       return;
@@ -62,35 +85,42 @@ const AskAIButton: React.FC<AskAIButtonProps> = ({ currentContent }) => {
     
     try {
       // Make API call to your backend
-      const response = await fetch('/api/ask-ai', {
+      const response = await fetch('http://localhost:8000/api/chatbot/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Token ${token}`,
         },
         body: JSON.stringify({
-          question,
+          question: questionToSubmit,
           context: currentContent,
         }),
       });
       
       if (!response.ok) {
-        throw new Error('Failed to get answer');
+        const errorData = await response.json().catch(() => null);
+        console.error('API Error Response:', {
+          status: response.status,
+          statusText: response.statusText,
+          data: errorData
+        });
+        throw new Error(`Server error (${response.status}): ${errorData?.message || response.statusText}`);
       }
       
       const data = await response.json();
       setAnswer(data.answer);
     } catch (err) {
-      setError(translate('errorMessage', 'askAI'));
-      console.error(err);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      setError(`${translate('errorMessage', 'askAI')}: ${errorMessage}`);
+      console.error('API Request Failed:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSuggestedQuestion = (suggestedQuestion: string) => {
-    setQuestion(suggestedQuestion);
-    // Auto-submit if desired
-    // handleSubmit(new Event('submit') as unknown as React.FormEvent);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await handleSubmitInternal(question);
   };
 
   return (
@@ -135,37 +165,6 @@ const AskAIButton: React.FC<AskAIButtonProps> = ({ currentContent }) => {
           {answer && (
             <div className="mb-4 p-4 bg-[#36393f] rounded-md border border-[#40444b]">
               <p className="text-[#dcddde] whitespace-pre-wrap">{answer}</p>
-            </div>
-          )}
-          
-          {!answer && !isLoading && (
-            <div className="mb-4">
-              <h3 className="text-sm font-medium text-[#b9bbbe] mb-2">
-                {translate('suggestions', 'askAI')}
-              </h3>
-              <div className="space-y-2">
-                <button 
-                  onClick={() => handleSuggestedQuestion(translate('suggestedQuestion1', 'askAI'))}
-                  className="w-full text-left p-2 bg-[#202225] hover:bg-[#36393f] rounded flex items-center text-[#dcddde] transition-colors"
-                >
-                  <span className="flex-1">{translate('suggestedQuestion1', 'askAI')}</span>
-                  <ChevronRight size={16} className="text-[#8e6bff]" />
-                </button>
-                <button 
-                  onClick={() => handleSuggestedQuestion(translate('suggestedQuestion2', 'askAI'))}
-                  className="w-full text-left p-2 bg-[#202225] hover:bg-[#36393f] rounded flex items-center text-[#dcddde] transition-colors"
-                >
-                  <span className="flex-1">{translate('suggestedQuestion2', 'askAI')}</span>
-                  <ChevronRight size={16} className="text-[#8e6bff]" />
-                </button>
-                <button 
-                  onClick={() => handleSuggestedQuestion(translate('suggestedQuestion3', 'askAI'))}
-                  className="w-full text-left p-2 bg-[#202225] hover:bg-[#36393f] rounded flex items-center text-[#dcddde] transition-colors"
-                >
-                  <span className="flex-1">{translate('suggestedQuestion3', 'askAI')}</span>
-                  <ChevronRight size={16} className="text-[#8e6bff]" />
-                </button>
-              </div>
             </div>
           )}
 
