@@ -37,3 +37,18 @@ class ContentResponse(BaseModel):
         if v.lower() not in valid_levels:
             raise ValueError(f"Difficulty level must be one of {valid_levels}")
         return v.lower()
+
+# Simple translation response schema to avoid validation issues
+class TranslationResponse(BaseModel):
+    topic: str
+    summary: str
+    translated_content: dict  # Store the entire translated content as a dictionary
+    language: str = "hindi"
+
+    @field_validator("language")
+    def validate_language(cls, v):
+        valid_languages = ["hindi", "kannada"]
+        if v.lower() not in valid_languages:
+            return "hindi"  # Default to Hindi if invalid language
+        return v.lower()
+
