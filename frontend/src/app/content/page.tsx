@@ -162,8 +162,12 @@ const ContentGenerationPage = () => {
     }
   };
 
-  const handleHistoryItemClick = (historyTopic: string) => {
+  // Change this function to include difficulty_level
+  const handleHistoryItemClick = (historyTopic: string, difficulty_level: string) => {
     setTopic(historyTopic);
+    if (difficulty_level) {
+      setDifficulty(difficulty_level);
+    }
   };
 
   // Format date string for display
@@ -259,7 +263,7 @@ ${quizQuestions.length > 0 ?
                       {visibleHistory.map((item) => (
                         <li key={item.id} className="bg-[#202225] rounded-lg p-3 hover:bg-[#2c2e33] transition-all duration-200 border border-[#40444b] hover:border-[#8e6bff]">
                           <button
-                            onClick={() => handleHistoryItemClick(item.topic)}
+                            onClick={() => handleHistoryItemClick(item.topic, item.difficulty_level)}
                             className="w-full text-left"
                           >
                             <h3 className="text-white font-semibold mb-1 truncate hover:text-[#8e6bff] transition-colors">
