@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from './ui/button';
 import { Loader2 } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
 
 interface PDFGeneratorProps {
   topic: string;
@@ -34,7 +33,6 @@ const PDFGenerator: React.FC<PDFGeneratorProps> = ({
   questions = [],
 }) => {
   const { getToken } = useAuth();
-  const { translate } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -109,10 +107,10 @@ const PDFGenerator: React.FC<PDFGeneratorProps> = ({
         {isLoading ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            {translate('generatingPdf', 'pdf')}
+            Generating PDF...
           </>
         ) : (
-          translate('downloadAsPdf', 'pdf')
+          'Download as PDF'
         )}
       </Button>
       
