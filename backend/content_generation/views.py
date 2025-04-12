@@ -5,14 +5,27 @@ from rest_framework.response import Response
 from rest_framework import status
 from .content_generation import generate_content_for_topic
 from .question_generation import QuestionGeneratorAgent
+from .translater import TranslaterAgent
 from .models import GeneratedContent
 from .serializers import GeneratedContentSerializer
 from .utils import generate_lesson_pdf_from_topic
 import json
 import logging
+import asyncio
 
 # Set up logging
 logger = logging.getLogger(__name__)
+
+# Helper function to get or create an event loop safely
+def get_or_create_eventloop():
+    try:
+        return asyncio.get_event_loop()
+    except RuntimeError as ex:
+        if "There is no current event loop in thread" in str(ex):
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            return loop
+        raise
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -114,12 +127,29 @@ async def generate_questions(request):
         num_questions = data.get('num_questions', 5)
         difficulty = data.get('difficulty', 'easy')
         
-        # Properly await the coroutine
-        questions = await agent.generate_questions(
-            str(content),
-            num_questions=num_questions,
-            difficulty=difficulty
-        )
+        # Try to use the existing event loop safely
+        try:
+            # Get the current event loop or create a new one if needed
+            loop = get_or_create_eventloop()
+            questions = await agent.generate_questions(
+                str(content),
+                num_questions=num_questions,
+                difficulty=difficulty
+            )
+        except Exception as loop_error:
+            # If there's an event loop error, create a new one and try again
+            if "Event loop is closed" in str(loop_error):
+                logger.info("Event loop was closed. Creating a new one...")
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                questions = await agent.generate_questions(
+                    str(content),
+                    num_questions=num_questions,
+                    difficulty=difficulty
+                )
+            else:
+                # Re-raise if it's not an event loop issue
+                raise
         
         # Convert each ResponseQuestions object to a dictionary
         serialized_questions = []
@@ -247,4 +277,66 @@ def generate_and_download_pdf(request):
     except Exception as e:
         logger.exception(f"PDF generation error: {str(e)}")
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@drf_api_view(['POST'])
+@permission_classes([IsAuthenticated])
+async def translate_content_view(request):
+    """
+    Translate educational content into Hindi or Kannada.
+    
+    Expected POST data:
+    {
+        "content": {
+            "topic": "Topic title",
+            "summary": "Content summary",
+            "sections": [...],
+            "references": [...],
+            "difficulty_level": "beginner|intermediate|advanced"
+        },
+        "language": "hindi" or "kannada" (optional, defaults to "hindi")
+    }
+    
+    Returns translation of the content in the specified language.
+    """
+    try:
+        # Extract data from request
+        data = request.data
+        
+        # Validate input
+        if not data:
+            return Response(
+                {"error": "Request body cannot be empty"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Extract content and language from request
+        content = data.get('content', data)  # If 'content' key doesn't exist, use entire data object
+        language = data.get('language', 'hindi').lower()
+        
+        # Create an instance of the TranslaterAgent
+        agent = TranslaterAgent()
+        
+        # Perform translation
+        logger.info(f"Starting translation to {language}...")
+        try:
+            # Get translation response
+            translation = await agent.translate_content(content, language)
+            logger.info(f"Translation to {language} completed successfully")
+            
+            # Return the translated content directly from the response
+            return Response(translation.translated_content, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Translation error: {str(e)}")
+            return Response(
+                {"error": f"Translation failed: {str(e)}"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+    except Exception as e:
+        logger.exception(f"Error in translate_content_view: {str(e)}")
+        return Response(
+            {"error": f"Failed to process translation request: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import ProfileForm from '@/components/profile/ProfileForm'
 import { useRouter } from 'next/navigation'
+import Navbar from '@/components/Navbar'
 
 type Profile = {
   user: {
@@ -106,6 +107,7 @@ export default function ProfilePage() {
         throw new Error('Failed to update profile')
       }
       
+
       const updatedData = await response.json()
       
       // Update local state with server response
@@ -132,6 +134,8 @@ export default function ProfilePage() {
   }
 
   return (
+    <>
+    <Navbar />
     <div className="min-h-screen bg-[#36393f] flex flex-col">
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto bg-[#2f3136] rounded-lg shadow-lg p-6">
@@ -145,11 +149,14 @@ export default function ProfilePage() {
             <div className="bg-red-500 bg-opacity-20 border border-red-500 text-white px-4 py-3 rounded">
               {error}
             </div>
+
           ) : profile ? (
             <ProfileForm profile={profile} onSave={handleSaveProfile} />
           ) : null}
         </div>
+<button className='p-20'></button>
       </main>
     </div>
+    </>
   )
 }

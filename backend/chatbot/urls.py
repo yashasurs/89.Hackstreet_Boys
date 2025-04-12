@@ -1,8 +1,9 @@
 from django.urls import path
-from .views import chat_response
+from .views import chat_response, transcribe_audio
 
 app_name = 'chatbot'
 
 urlpatterns = [
     path('chatbot/', chat_response, name='chat_response'),
+    path('transcribe/', transcribe_audio),
 ]
