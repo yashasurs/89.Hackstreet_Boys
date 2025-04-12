@@ -202,11 +202,34 @@ const ContentGenerationPage = () => {
     }));
   };
 
-  // Get the current content to pass to the AskAIButton
+  // Enhanced content formatting for AskAIButton
   const currentContentText = content ? 
-    `Topic: ${content.topic}\n\nSummary: ${content.summary}\n\n${content.sections.map(section => 
-      `${section.title}:\n${section.content}\nKey Points:\n${section.key_points.join('\n')}`
-    ).join('\n\n')}` : '';
+    `Topic: ${content.topic}
+Difficulty Level: ${content.difficulty_level || difficulty}
+
+Summary: 
+${content.summary}
+
+${content.sections.map(section => 
+  `Section: ${section.title}
+${section.content}
+
+Key Points:
+${section.key_points.map(point => `• ${point}`).join('\n')}
+`).join('\n\n')}
+
+${content.references && content.references.length > 0 ? 
+  `References:\n${content.references.map(ref => `• ${ref}`).join('\n')}` : ''}
+  
+${quizQuestions.length > 0 ? 
+  `Quiz Questions:\n${quizQuestions.map((q, i) => 
+    `${i+1}. ${q.question}
+    A: ${q.option_a}
+    B: ${q.option_b}
+    C: ${q.option_c}
+    D: ${q.option_d}
+    Correct Answer: ${q.answer_string}`
+  ).join('\n\n')}` : ''}` : '';
 
   return (
     <div className="min-h-screen bg-[#36393f] text-white flex flex-col">
@@ -668,7 +691,10 @@ const ContentGenerationPage = () => {
           </div>
         </div>
       </div>
-      <AskAIButton currentContent={currentContentText} />
+      <AskAIButton 
+        currentContent={currentContentText} 
+        autoSubmit={false}
+      />
     </div>
   );
 };
