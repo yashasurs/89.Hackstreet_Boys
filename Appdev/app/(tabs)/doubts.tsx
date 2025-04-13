@@ -22,7 +22,7 @@ const DoubtsScreen = () => {
         }
 
         try {
-            const res = await fetch('http://localhost:8000/api/chatbot/', {
+            const res = await fetch('http://172.16.14.94:8000/api/chatbot/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
