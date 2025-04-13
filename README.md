@@ -1,45 +1,78 @@
-# Welcome Hackstreet Boys 👋
+# BrightMind💡– Empowering Rural Education with AI
 
-Hello Team **Hackstreet Boys** from **JSS Science and Technology University**,
-
-Welcome to the Hackathon! We're excited to have you on board and can't wait to see what you'll build under the theme **"Digital solutions for rural education"** 
-
-## Team Details
-
-- **Team Number:** 89  
-- **Team Name:** Hackstreet Boys
-- **Team Leader:** Yashas Manju Urs  
-- **Email:** yashasmanjuurs@gmail.com  
-- **Phone:** 9845199330  
-
-### Team Members:
-- Anirudh Kashyap 
-- Suditya Kulkarni 
-- Aneesh A S 
-
-## Problem Statement
-
-> **Bridging the Gap in Personalized, Multilingual Educational Content for Students, And Other Useful Fe...**
+**BrightMind** is an AI-powered educational platform designed to bridge the learning gap in rural and under-resourced areas. Leveraging cutting-edge language models like **Gemini 2.0 Flash**, the platform provides accessible, engaging, and personalized learning experiences to both students and teachers.
 
 ---
 
-### Let's Get Started 
+## 🚀 Features
 
-This repository has been set up for your hackathon project. Use it to manage your code, collaborate, and share your progress.
+- 🔍 **AI-Generated Content Summaries**  
+  Quickly understand complex topics with concise summaries powered by Gemini 2.0 Flash.
 
-**Important Guidelines - Please Read Carefully**
+- ❓ **Doubt-Solving Chat Assistant**  
+  Real-time AI chat to help students and teachers clarify doubts instantly.
 
-- Do **not** make any commits **before the allotted start date and time**. Early commits may result in getting caught.
-- Commit your work **regularly** to showcase your progress throughout the hackathon.
+- 📝 **Quiz Generation**  
+  Automatically generate quizzes from lesson content to reinforce learning.
 
-- Maintain **professionalism and integrity** at all times. Any form of plagiarism or rule-breaking will lead to strict action.
+- 📄 **Downloadable PDFs**  
+  Export summaries, quizzes, and notes as PDFs for offline use—ideal for areas with limited connectivity.
 
-Let's keep it fair, fun, and impactful! 
+- 🌐 **Multi-Platform Access**  
+  Built with **Next.js** for web and **React Native** for mobile—ensuring access across devices.
+
+- 🧠 **Teacher Toolkit**  
+  Access teaching aids, translated materials, and lesson plans tailored for rural contexts.
+
+- 🌍 **Multilingual Support**  
+  BrightMind breaks language barriers by offering educational content in multiple **regional languages**, ensuring inclusivity and better understanding for learners in diverse linguistic backgrounds.
+
 ---
 
-**Good luck, Team Hackstreet Boys! Happy coding!**
+### 🧱 Tech Stack
 
-If you need any support during the hackathon, don't hesitate to reach out to the co-ordinators.
+**Frontend**  
+- 🌐 [Next.js](https://nextjs.org/) – React-based framework for server-side rendering and static websites  
+- 📱 [React Native](https://reactnative.dev/) – Cross-platform mobile app development  
 
-Cheers,  
-_Advaya Hackathon Team_
+**Backend**  
+- 🐍 [Django REST Framework](https://www.django-rest-framework.org/) – Flexible and powerful framework for building Web APIs  
+- 🗃️ [SQLite](https://sqlite.org/) – A lightweight database for embedded apps  
+
+**AI Engine**  
+- 🤖 [Gemini 2.0 Flash](https://google.com) – AI model used for content generation (summaries, quizzes, chat)  
+
+**Other Tools**  
+- 🔒 [JWT](https://jwt.io/) – Secure token-based authentication  
+
+
+---
+
+## 🛠️ Installation
+
+### Backend – Django
+
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # or .\venv\Scripts\activate on Windows
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+```
+
+### Frontend - Next.js
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Mobile - React Native
+
+```bash
+cd Appdev
+npm install
+npx expo start  # or run-ios
+```
